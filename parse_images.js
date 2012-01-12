@@ -1,9 +1,11 @@
 var jsdom = require("jsdom");
 var im = require('imagemagick');
 
-var link = 'http://www.pinkmascara.com/anna-kosturova-marilyn-dress-as-seen-on-miranda-kerr-2';
+// var link = 'http://www.pinkmascara.com/anna-kosturova-marilyn-dress-as-seen-on-miranda-kerr-2';
 // var link = "http://www.shopbop.com/rouched-pencil-skirt-james-perse/vp/v=1/845524441916289.htm?folderID=2534374302023782&extid=affprg-4022050-JPERS4008112588&colorId=12588";
-// var link = "http://www.google.com/";
+// var link = "http://shop.nordstrom.com/s/donna-morgan-belted-chiffon-dress/3172484?cm_ite=donna_morgan_belted_chiffon_dress:259207_7&cm_pla=dresses:women:dress&cm_ven=Linkshare&siteid=xC_K04x1nMI-UkWMJmyPLfjRCCVlsUYKFw&url=http://shop.nordstrom.com/S/3172484?cm_cat=datafeed";
+// var link = 'http://www.michaelstars.com/p-6463.php?=&utm_source=affiliatetraction&utm_medium=commissionjunction&utm_campaign=http://www.michaelstars.com/p-6463.php';
+var link = 'http://www.80spurple.com/shop/product/136846/5133/purple-label-womens-ashley-button-down-sleeveless-top-emerald';
 
 var biggestArea = -1;
 var biggestImage = 'http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg';
@@ -13,6 +15,7 @@ jsdom.env(link, [
 ],
 function(errors, window) {
   if (errors) throw errors;
+  console.log("Number of images on page", window.$("img").length);
   window.$("img").each(function() {
     var imageUrl = window.$(this).attr("src");
     if(imageUrl == '') return true;
@@ -20,7 +23,7 @@ function(errors, window) {
     im.identify(imageUrl, function(err, features){
       if (err) return true; // throw err;
       var area = features['height'] * features['width'];
-      if (area > biggestArea) {
+      if (area >= biggestArea) {
         biggestArea = area;
         biggestImage = imageUrl;
       }
