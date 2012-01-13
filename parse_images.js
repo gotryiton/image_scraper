@@ -21,7 +21,7 @@ server.post('/biggest_image', function(req, res) {
       // on error send back the default image
       if (errors) {
         res.send(200, {
-          url: biggestImage
+          image: biggestImage
         });
         return true; //throw errors;
       }
@@ -58,7 +58,7 @@ server.post('/biggest_image', function(req, res) {
           // when all images are done processing, return the biggest
           if(!count) {
             res.send(200, {
-              url: biggestImage
+              image: biggestImage
             });
           }
         });
