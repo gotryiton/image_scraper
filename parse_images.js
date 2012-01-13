@@ -40,7 +40,10 @@ server.post('/biggest_image', function(req, res) {
         }
         
         // convert URLs form relative to absolute
-        if(imageUrl.slice(0, 4) != 'http') imageUrl = link.split('/')[0] + '//' + link.split('/')[2] + imageUrl;
+        if(imageUrl.slice(0, 4) != 'http'){
+          var split = url.split('/');
+          imageUrl = split[0] + '//' + split[2] + imageUrl;
+        }
         
         // let imagemagick fetch and analyze the images in async
         im.identify(imageUrl, function(err, features){
