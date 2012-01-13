@@ -6,7 +6,7 @@ var restify = require('restify');
 
 var server = restify.createServer();
 
-server.post('/largest_image', function(req, res) {
+server.post('/biggest_image', function(req, res) {
   var url = req.params.url;
   var biggestArea = -1;
   var biggestImage = 'http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg';
