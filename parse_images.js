@@ -6,7 +6,7 @@ var restify = require('restify');
 
 var server = restify.createServer();
 
-server.post('/biggest_image', function(req, res) {
+server.post('/biggest-image', function(req, res) {
   var url = req.params.url;
   var biggestArea = -1;
   var biggestImage = 'http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg';
@@ -23,6 +23,7 @@ server.post('/biggest_image', function(req, res) {
         res.send(200, {
           image: biggestImage
         });
+        console.log('Errors parsing', url, 'Errors:', errors);
         return true; //throw errors;
       }
       
@@ -48,7 +49,10 @@ server.post('/biggest_image', function(req, res) {
         // let imagemagick fetch and analyze the images in async
         im.identify(imageUrl, function(err, features){
           count--;
-          if (err) return true; // throw err;
+          if (err) {
+            console.log('Imagemagick error for image', imageUrl);
+            return true;
+          }
           var area = features['height'] * features['width'];
           if(area >= biggestArea) {
             biggestArea = area;
