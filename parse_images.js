@@ -33,7 +33,6 @@ server.post('/biggest-image', function(req, res) {
       // iterate through all images on the page
       window.$("img").each(function() {
         var imageUrl = window.$(this).attr("src");
-        
         // don't waste time requesting these, need to count them though
         if(imageUrl == '') {
           count--;
@@ -43,7 +42,7 @@ server.post('/biggest-image', function(req, res) {
         // convert URLs form relative to absolute
         if(imageUrl.slice(0, 2) == '//'){
           imageUrl = 'http:' + imageUrl;
-        } else if(imageUrl.slice(0, 4) != 'http'){
+        } else if(imageUrl.slice(0, 4).toLowerCase() != 'http'){
           var split = url.split('/');
           imageUrl = split[0] + '//' + split[2] + imageUrl;
         }
@@ -52,9 +51,10 @@ server.post('/biggest-image', function(req, res) {
         im.identify(encodeURI(imageUrl), function(err, features){
           count--;
           if (err) {
-            console.log('Imagemagick error for image', imageUrl);
+            console.log('Imagemagick error for image', imageUrl, err);
             return true;
           }
+          if (features['height'] / features['width'] < 0.76) return true;
           var area = features['height'] * features['width'];
           if(area >= biggestArea) {
             biggestArea = area;
