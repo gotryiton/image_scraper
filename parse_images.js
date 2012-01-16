@@ -13,7 +13,7 @@ server.post('/biggest-image', function(req, res) {
   var count = 0;
   
   jsdom.env({
-    html: url,
+    html: encodeURI(url),
     src: [
       jqueryString
     ],
@@ -41,13 +41,15 @@ server.post('/biggest-image', function(req, res) {
         }
         
         // convert URLs form relative to absolute
-        if(imageUrl.slice(0, 4) != 'http'){
+        if(imageUrl.slice(0, 2) == '//'){
+          imageUrl = 'http:' + imageUrl;
+        } else if(imageUrl.slice(0, 4) != 'http'){
           var split = url.split('/');
           imageUrl = split[0] + '//' + split[2] + imageUrl;
         }
         
         // let imagemagick fetch and analyze the images in async
-        im.identify(imageUrl, function(err, features){
+        im.identify(encodeURI(imageUrl), function(err, features){
           count--;
           if (err) {
             console.log('Imagemagick error for image', imageUrl);
