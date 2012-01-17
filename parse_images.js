@@ -27,6 +27,15 @@ server.post('/biggest-image', function(req, res) {
           console.log('Errors parsing', url, 'Errors:', errors);
           return true; //throw errors;
         }
+        
+        // pick FB Open Graph Protocol image if available
+        var ogImage = window.$('meta[property="og:image"]').attr('content');
+        if(ogImage != undefined) {
+          res.send(200, {
+            image: ogImage
+          });
+          return true;
+        }
 
         // set the count to know when all images processed
         count = window.$("img").length;
