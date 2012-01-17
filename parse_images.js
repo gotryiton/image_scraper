@@ -40,8 +40,12 @@ server.post('/biggest-image', function(req, res) {
         }
         
         // convert URLs form relative to absolute
-        if(imageUrl.slice(0, 2) == '//'){
+        var twoSlice = imageUrl.slice(0, 2);
+        if(twoSlice == '//'){
           imageUrl = 'http:' + imageUrl;
+        } else if(twoSlice == '..'){
+          var split = url.split('/');
+          imageUrl = split[0] + '//' + split[2] + imageUrl.substring(2);
         } else if(imageUrl.slice(0, 4).toLowerCase() != 'http'){
           var split = url.split('/');
           imageUrl = split[0] + '//' + split[2] + imageUrl;
