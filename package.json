@@ -1,0 +1,9 @@
+{
+  "name": "image-scraper",
+  "version": "0.1.9",
+  "dependencies": {
+    "jsdom": "0.2.x",
+    "imagemagick": "0.1.x",
+    "restify": "0.5.x"
+ }
+}
