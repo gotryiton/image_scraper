@@ -1,9 +1,10 @@
 Image Scraper
-=====
+=============
+
 Node.js server written to pick Facebook Open Graph Protocol image. If that isn't available it picks out the largest image on the page.
 
 Install Guide
------
+-------------
 
 Makes sure you have `node.js` and `npm` installed beforehand.
 
@@ -14,7 +15,7 @@ After cloning the repo you will want to run
 to install all dependencies.
 
 Running the Server
------
+------------------
 
 From the project directory run
 
