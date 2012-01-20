@@ -104,6 +104,8 @@ server.post('/biggest-image', function(req, res) {
         var split = url.split('/');
         imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
       } else if(imageUrl.slice(0, 4).toLowerCase() != 'http'){
+        // handle the case where the URL starts with folder name and not '/'
+        if (imageUrl.charAt(0) != '/') imageUrl = '/' + imageUrl;
         var split = url.split('/');
         imageUrl = split[0] + '//' + split[2] + imageUrl;
       }
