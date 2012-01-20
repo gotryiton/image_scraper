@@ -69,6 +69,14 @@ server.post('/biggest-image', function(req, res) {
     
     // set the count to know when all images processed
     count = images.length;
+    
+    if(!count) {
+      res.send(200, {
+        title: title,
+        description: description,
+        image: biggestImage
+      });
+    }
 
     // iterate through all images on the page
     images.forEach(function(image, index) {
