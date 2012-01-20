@@ -3,7 +3,7 @@ Image Scraper
 
 Node.js server written to pick Facebook Open Graph Protocol image. If that isn't available it picks out the largest image on the page.
 
-Pre-requisites
+Pre-Requisites
 --------------
 
  1. Install `node.js` and `npm`.
@@ -24,6 +24,6 @@ Running the Server
 
 From the project root directory run
 
-    node biggest_image.js
+    node scraper.js
 
 which will bring up the server on `http://localhost:1337/` and listen to post requests for the variable `url` on `http://localhost:1337/biggest-image` for the webpage address.
