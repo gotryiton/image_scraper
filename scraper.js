@@ -35,7 +35,10 @@ server.post('/biggest-image', function(req, res) {
       try {
         title = dom.get('//meta[@name="title"]').attr('content').value();
       } catch (e) {
-        title = dom.get('//title').text();
+        titleElement = dom.get('//title');
+        if(titleElement != undefined) {
+          title = titleElement.text();
+        }
       }
     }
     
