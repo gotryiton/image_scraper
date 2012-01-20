@@ -13,11 +13,15 @@ server.post('/biggest-image', function(req, res) {
   var url = req.params.url;
   var biggestArea = -1;
   var biggestImage = 'http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg';
+  var title = "What's in a title...";
+  var description = 'No words can describe this!';
   
   request({url:url}, function (error, response, body) {
     if (error || response.statusCode != 200) {
       console.log('Could not fetch the URL', error);
       res.send(200, {
+        title: tite,
+        description: description,
         image: biggestImage
       });
       return true;
@@ -43,21 +47,21 @@ server.post('/biggest-image', function(req, res) {
     count = images.length;
 
     // iterate through all images on the page
-    for(var i = 0; i < images.length; i++) {
+    images.forEach(function(image) {
       
       try {
         // some people have an img tag with no src attribute - welcome to the internet
-        var imageUrl = images[i].attr('src').value();
+        var imageUrl = image.attr('src').value();
       } catch(e) {
-        console.log('Skipping element ' + images[i] + ' because there was error', e);
+        console.log('Skipping element ' + image + ' because there was error', e);
         count--;
-        continue;
+        return;
       }
       
       // don't waste time requesting these, need to count them though
       if(imageUrl == '' || imageUrl.substr(-4) == '.gif') {
         count--;
-        continue;
+        return;
       }
 
       // convert URLs form relative to absolute
@@ -94,7 +98,7 @@ server.post('/biggest-image', function(req, res) {
           });
         }
       });
-    }
+    });
   });
 });
 
