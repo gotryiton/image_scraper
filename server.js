@@ -22,10 +22,7 @@ server.post('/biggest-image', function(req, res) {
     
     var dom = libxmljs.parseHtmlString(body);
     
-    // deal with title
     var title = getTitle(dom);
-    
-    // deal with description
     var description = getDescription(dom);
     
     // pick FB Open Graph Protocol image if available
@@ -40,11 +37,8 @@ server.post('/biggest-image', function(req, res) {
       });
       return true;
     }
-    
-    // find largest of all images
+
     var images = dom.find('//img');
-    
-    // set the count to know when all images processed
     count = images.length;
     
     if(!count) {
