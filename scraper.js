@@ -4,52 +4,29 @@ var request = require('request');
 var libxmljs = require("libxmljs");
 
 var server = restify.createServer();
-var count = 0;
 
 server.post('/biggest-image', function(req, res) {
   var url = req.params.url;
   var biggestArea = -1;
   var biggestImage = 'http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg';
-  var title = "What's in a title...";
-  var description = 'No words can describe this!';
+  var count = 0;
   
   request({url:url}, function (error, response, body) {
     if (error || response.statusCode != 200) {
       console.log('Could not fetch the URL', error);
       res.send(200, {
-        title: title,
-        description: description,
-        image: biggestImage
+        description: 'Could not fetch the URL'
       });
-      return true;
+      return;
     }
     
     var dom = libxmljs.parseHtmlString(body);
     
     // deal with title
-    var ogTitleElement = dom.get('//meta[@property="og:title"]');
-    if(ogTitleElement != undefined) {
-      title = ogTitleElement.attr('content').value();
-    } else {
-      // get meta data title or page title
-      try {
-        title = dom.get('//meta[@name="title"]').attr('content').value();
-      } catch (e) {
-        titleElement = dom.get('//title');
-        if(titleElement != undefined) {
-          title = titleElement.text();
-        }
-      }
-    }
+    var title = getTitle(dom);
     
     // deal with description
-    var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
-    if(ogDescriptionElement != undefined) {
-      description = ogDescriptionElement.attr('content').value();
-    } else {
-      var descriptionElement = dom.get('//meta[@name="description"]');
-      if(descriptionElement != undefined) description = descriptionElement.attr('content').value();
-    }
+    var description = getDescription(dom);
     
     // pick FB Open Graph Protocol image if available
     var ogImageElement = dom.get('//meta[@property="og:image"]');
@@ -97,18 +74,7 @@ server.post('/biggest-image', function(req, res) {
       }
 
       // convert URLs form relative to absolute
-      var twoSlice = imageUrl.substr(2);
-      if(twoSlice == '//'){
-        imageUrl = 'http:' + imageUrl;
-      } else if(twoSlice == '..'){
-        var split = url.split('/');
-        imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
-      } else if(imageUrl.slice(0, 4).toLowerCase() != 'http'){
-        // handle the case where the URL starts with folder name and not '/'
-        if (imageUrl.charAt(0) != '/') imageUrl = '/' + imageUrl;
-        var split = url.split('/');
-        imageUrl = split[0] + '//' + split[2] + imageUrl;
-      }
+      imageUrl = getAbsUrl(imageUrl, url);
 
       // let imagemagick fetch and analyze the images in async
       im.identify(encodeURI(imageUrl), function(err, features) {
@@ -162,3 +128,52 @@ server.post('/biggest-image', function(req, res) {
 });
 
 server.listen(1337);
+
+function getTitle(dom) {
+  var title = "What's in a title...";
+  var ogTitleElement = dom.get('//meta[@property="og:title"]');
+  if(ogTitleElement != undefined) {
+    title = ogTitleElement.attr('content').value();
+  } else {
+    // get meta data title or page title
+    try {
+      title = dom.get('//meta[@name="title"]').attr('content').value();
+    } catch (e) {
+      titleElement = dom.get('//title');
+      if(titleElement != undefined) {
+        title = titleElement.text();
+      }
+    }
+  }
+  // trim?
+  return title;
+}
+
+function getDescription(dom) {
+  var description = 'No words can describe this!';
+  var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
+  if(ogDescriptionElement != undefined) {
+    description = ogDescriptionElement.attr('content').value();
+  } else {
+    var descriptionElement = dom.get('//meta[@name="description"]');
+    if(descriptionElement != undefined) description = descriptionElement.attr('content').value();
+  }
+  return description;
+}
+
+function getAbsUrl(imageUrl, url) {
+  var twoSlice = imageUrl.substr(2);
+  if(twoSlice == '//'){
+    imageUrl = 'http:' + imageUrl;
+  } else if(twoSlice == '..'){
+    var split = url.split('/');
+    imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
+  } else if(imageUrl.slice(0, 4).toLowerCase() != 'http'){
+    // handle the case where the URL starts with folder name and not '/'
+    if (imageUrl.charAt(0) != '/') imageUrl = '/' + imageUrl;
+    var split = url.split('/');
+    imageUrl = split[0] + '//' + split[2] + imageUrl;
+  }
+  return imageUrl;
+}
+
