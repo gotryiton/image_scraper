@@ -1,7 +1,4 @@
-var jsdom = require("jsdom");
 var im = require('imagemagick');
-var fs = require('fs');
-var jqueryString = fs.readFileSync("./jquery-1.7.1.min.js").toString();
 var restify = require('restify');
 var request = require('request');
 var libxmljs = require("libxmljs");
@@ -20,7 +17,7 @@ server.post('/biggest-image', function(req, res) {
     if (error || response.statusCode != 200) {
       console.log('Could not fetch the URL', error);
       res.send(200, {
-        title: tite,
+        title: title,
         description: description,
         image: biggestImage
       });
@@ -29,12 +26,36 @@ server.post('/biggest-image', function(req, res) {
     
     var dom = libxmljs.parseHtmlString(body);
     
+    // deal with title
+    var ogTitleElement = dom.get('//meta[@property="og:title"]');
+    if(ogTitleElement != undefined) {
+      title = ogTitleElement.attr('content').value();
+    } else {
+      // get meta data title or page title
+      try {
+        title = dom.get('//meta[@name="title"]').attr('content').value();
+      } catch (e) {
+        title = dom.get('//title').text();
+      }
+    }
+    
+    // deal with description
+    var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
+    if(ogDescriptionElement != undefined) {
+      description = ogDescriptionElement.attr('content').value();
+    } else {
+      var descriptionElement = dom.get('//meta[@name="description"]');
+      if(descriptionElement != undefined) description = descriptionElement.attr('content').value();
+    }
+    
     // pick FB Open Graph Protocol image if available
     var ogImageElement = dom.get('//meta[@property="og:image"]');
     
     if(ogImageElement != undefined) {
       var ogImage = ogImageElement.attr('content').value();
       res.send(200, {
+        title: title,
+        description: description,
         image: ogImage
       });
       return true;
@@ -47,7 +68,7 @@ server.post('/biggest-image', function(req, res) {
     count = images.length;
 
     // iterate through all images on the page
-    images.forEach(function(image) {
+    images.forEach(function(image, index) {
       
       try {
         // some people have an img tag with no src attribute - welcome to the internet
@@ -79,14 +100,37 @@ server.post('/biggest-image', function(req, res) {
       // let imagemagick fetch and analyze the images in async
       im.identify(encodeURI(imageUrl), function(err, features) {
         count--;
+        
         if (err) {
+          // you want to avoid the tricky situation where you have an error on the last image
+          // if you return without sending out the response you will have the client wait for a time out
+          // lost 1.8 hours of sleep figuring out what was going wrong because this didn't show up on a faster internet connection
+          if(!count) {
+            res.send(200, {
+              title: title,
+              description: description,
+              image: biggestImage
+            });
+          }
           console.log('Imagemagick error for image', imageUrl, err);
           return true;
         }
-        if (features['format'] == 'GIF' || features['height'] / features['width'] < 0.76) return true;
+        
+        // if there's an error for the last image
+        if (err && !count) {
+          console.log('Imagemagick error for image', imageUrl, err);
+          res.send(200, {
+            title: title,
+            description: description,
+            image: biggestImage
+          });
+          return true;
+        }
+        
+        var skip = features['format'] == 'GIF' || features['height'] / features['width'] < 0.76;
         var area = features['height'] * features['width'];
 
-        if(area >= biggestArea) {
+        if(!skip && area >= biggestArea) {
           biggestArea = area;
           biggestImage = imageUrl;
         }
@@ -94,6 +138,8 @@ server.post('/biggest-image', function(req, res) {
         // when all images are done processing, return the biggest
         if(!count) {
           res.send(200, {
+            title: title,
+            description: description,
             image: biggestImage
           });
         }
