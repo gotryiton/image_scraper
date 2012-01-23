@@ -11,9 +11,9 @@ Scraper.prototype.getUrl = function() {
 };
   
 Scraper.prototype.getBody = function(callback) {
-  var standard = '<meta property="og:title" content="Something went wrong!" />' +
-                 '<meta property="og:image" content="http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg" />' +
-                 '<meta property="og:description" content="That doesn\'t look like a working URL." />';
+  var standard = '<meta property="og:title" content="Something went wrong!" />\
+                  <meta property="og:image" content="http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg" />\
+                  <meta property="og:description" content="That doesn\'t look like a working URL." />';
   try {
     request({url:this.url}, function (error, response, body) {
       if (error || response.statusCode != 200) {
