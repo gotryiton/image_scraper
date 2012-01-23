@@ -89,17 +89,6 @@ server.post('/biggest-image', function(req, res) {
           return true;
         }
         
-        // if there's an error for the last image
-        if (err && !count) {
-          console.log('Imagemagick error for image', imageUrl, err);
-          res.send(200, {
-            title: title,
-            description: description,
-            image: biggestImage
-          });
-          return true;
-        }
-        
         var skip = features['format'] == 'GIF' || features['height'] / features['width'] < 0.76;
         var area = features['height'] * features['width'];
 
