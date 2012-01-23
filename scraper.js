@@ -29,11 +29,8 @@ Scraper.prototype.getBody = function(callback) {
   }
 };
 
-Scraper.prototype.getDom = function(callback) {
-  this.getBody(function(body) {
-    var dom = libxmljs.parseHtmlString(body);
-    callback(dom);
-  });
+Scraper.prototype.getDom = function(string) {
+  return libxmljs.parseHtmlString(string);
 };
 
 Scraper.prototype.getTitle = function(dom) {
@@ -168,7 +165,8 @@ Scraper.prototype.getImageArea = function(imageUrl, callback) {
 
 Scraper.prototype.getData = function(callback) {
   var scraperObj = this;
-  this.getDom(function(dom) {
+  this.getBody(function(body) {
+    var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
     scraperObj.getImage(dom, function(image) {
