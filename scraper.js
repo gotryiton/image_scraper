@@ -2,7 +2,7 @@ var request = require('request'),
     libxmljs = require("libxmljs"),
     im = require('imagemagick');
 
-var Scraper = function(url) {
+Scraper = function(url) {
   this.url = url;
 };
 
@@ -163,8 +163,8 @@ Scraper.prototype.getData = function(callback) {
   });
 };
 
-var sc = new Scraper('http://www.shopbop.com/rouched-pencil-skirt-james-perse/vp/v=1/845524441916289.htm?folderID=2534374302023782&extid=affprg-4022050-JPERS4008112588&colorId=12588');
-
-sc.getData(function(data) {
-  console.log(data);
-});
+// var sc = new Scraper('http://www.shopbop.com/rouched-pencil-skirt-james-perse/vp/v=1/845524441916289.htm?folderID=2534374302023782&extid=affprg-4022050-JPERS4008112588&colorId=12588');
+// 
+// sc.getData(function(data) {
+//   console.log(data);
+// });
