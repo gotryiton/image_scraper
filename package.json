@@ -6,5 +6,8 @@
     "imagemagick": "0.1.x",
     "restify": "0.5.x",
     "request": "2.9.x"
- }
+ },
+ "devDependencies": {
+     "nodeunit": "0.6.x"
+  }
 }
