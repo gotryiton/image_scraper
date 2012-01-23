@@ -11,14 +11,22 @@ Scraper.prototype.getUrl = function() {
 };
   
 Scraper.prototype.getBody = function(callback) {
+  var standard = '<meta property="og:title" content="Something went wrong!" />' +
+                 '<meta property="og:image" content="http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg" />' +
+                 '<meta property="og:description" content="That doesn\'t look like a working URL." />';
+  try {
     request({url:this.url}, function (error, response, body) {
-    if (error || response.statusCode != 200) {
-      console.log('Could not fetch the URL', error);
-      callback(undefined);
-    } else {
-      callback(body);
-    }
-  });
+      if (error || response.statusCode != 200) {
+      // console.log('Could not fetch the URL', error);
+        callback(standard);
+      } else {
+        callback(body);
+      }
+    });
+  } catch(e) {
+    // console.log('There was an error for', this.url, e);
+    callback(standard);
+  }
 };
 
 Scraper.prototype.getDom = function(callback) {
@@ -96,7 +104,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   // no images? :(
   if(!count) {
-    console.log('No images found for', this.url);
+    // console.log('No images found for', this.url);
     callback(biggestImage);
     return;
   }
@@ -124,7 +132,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       // some people have an img tag with no src attribute - welcome to the internet
       var imageUrl = imageElements[i].attr('src').value();
     } catch(e) {
-      console.log('Skipping element ' + imageElements[i] + ' because there was error', e);
+      // console.log('Skipping element ' + imageElements[i] + ' because there was error', e);
       continue;
     }
     
@@ -142,7 +150,7 @@ Scraper.prototype.getImageArea = function(imageUrl, callback) {
   im.identify(imageUrl, function(err, features) {
     
     if(err) {
-      console.log('There was an Image Magick error getting', imageUrl, err);
+      // console.log('There was an Image Magick error getting', imageUrl, err);
       callback(imageUrl, -1);
       return;
     }
