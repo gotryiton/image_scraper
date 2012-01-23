@@ -24,6 +24,6 @@ Running the Server
 
 From the project root directory run
 
-    node scraper.js
+    node server.js
 
 which will bring up the server on `http://localhost:1337/` and listen to post requests for the variable `url` on `http://localhost:1337/biggest-image` for the webpage address.
