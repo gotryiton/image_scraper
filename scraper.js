@@ -74,11 +74,10 @@ Scraper.prototype.getAbsUrl = function(imageUrl) {
     var split = url.split('/');
     imageUrl = split[0] + '//' + split[2] + imageUrl;
   }
-  return imageUrl;
+  return encodeURI(imageUrl);
 };
 
 Scraper.prototype.getImage = function(dom, callback) {
-  var scraperObj = this;
   var biggestArea = -1;
   var biggestImage = 'http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg';
   
@@ -92,8 +91,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   }
   
   // if no open-graph image pick the biggest image
-  var images = dom.find('//img');
-  
+  var images = this.getImageUrls(dom);
   count = images.length;
   
   // no images? :(
@@ -102,53 +100,59 @@ Scraper.prototype.getImage = function(dom, callback) {
     callback(biggestImage);
     return;
   }
-
-  // iterate through all images on the page
-  images.forEach(function(image) {
-    
-    try {
-      // some people have an img tag with no src attribute - welcome to the internet
-      var imageUrl = image.attr('src').value();
-    } catch(e) {
-      console.log('Skipping element ' + image + ' because there was error', e);
+  
+  for(var i = 0; i < images.length; i++) {
+    this.getImageArea(images[i], function(url, area) {
       count--;
-      return;
-    }
-    
-    // don't waste time requesting these, need to count them though
-    if(imageUrl == '' || imageUrl.substr(-4) == '.gif') {
-      count--;
-      return;
-    }
-
-    // convert URLs form relative to absolute
-    imageUrl = scraperObj.getAbsUrl(imageUrl);
-
-    // let imagemagick fetch and analyze the images in async
-    im.identify(encodeURI(imageUrl), function(err, features) {
-      
-      count--;
-      
-      if (err) {
-        // you want to avoid the tricky situation where you have an error on the last image
-        // if you return without sending out the response you will have the client wait for a time out
-        // lost 1.8 hours of sleep figuring out what was going wrong because this didn't show up on a faster internet connection
-        if(!count) callback(biggestImage);
-        console.log('Imagemagick error for image', imageUrl, err);
-        return;
-      }
-      
-      var skip = features['format'] == 'GIF' || features['height'] / features['width'] < 0.76;
-      var area = features['height'] * features['width'];
-
-      if(!skip && area >= biggestArea) {
+      if(area > biggestArea) {
         biggestArea = area;
-        biggestImage = imageUrl;
+        biggestImage = url;
       }
-
-      // when all images are done processing, return the biggest
       if(!count) callback(biggestImage);
     });
+  }
+};
+
+Scraper.prototype.getImageUrls = function(dom) {
+  var imageUrls = [];
+  var imageElements = dom.find('//img');
+  var count = imageElements.length;
+  for(var i = 0; i < count; i++) {
+    try {
+      // some people have an img tag with no src attribute - welcome to the internet
+      var imageUrl = imageElements[i].attr('src').value();
+    } catch(e) {
+      console.log('Skipping element ' + imageElements[i] + ' because there was error', e);
+      continue;
+    }
+    
+    // ignoring GIFs, they sometimes are big and they almost never are product images
+    if(imageUrl == '' || imageUrl.substr(-4) == '.gif') {
+      continue;
+    }
+    
+    imageUrls.push(encodeURI(this.getAbsUrl(imageUrl)));
+  }
+  return imageUrls;
+};
+
+Scraper.prototype.getImageArea = function(imageUrl, callback) {
+  im.identify(imageUrl, function(err, features) {
+    
+    if(err) {
+      console.log('There was an Image Magick error getting', imageUrl, err);
+      callback(imageUrl, -1);
+      return;
+    }
+
+    var skip = features['format'] == 'GIF' || features['height'] / features['width'] < 0.76;
+    if(skip) {
+      callback(imageUrl, -1);
+      return;
+    }
+    
+    var area = features['height'] * features['width'];
+    callback(imageUrl, area);
   });
 };
 
@@ -158,13 +162,7 @@ Scraper.prototype.getData = function(callback) {
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
     scraperObj.getImage(dom, function(image) {
-      callback({'title':title, 'description':description, 'image':image});
+      callback({'title': title, 'description': description, 'image': image});
     });
   });
 };
-
-// var sc = new Scraper('http://www.shopbop.com/rouched-pencil-skirt-james-perse/vp/v=1/845524441916289.htm?folderID=2534374302023782&extid=affprg-4022050-JPERS4008112588&colorId=12588');
-// 
-// sc.getData(function(data) {
-//   console.log(data);
-// });
