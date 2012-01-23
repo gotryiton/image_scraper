@@ -101,8 +101,10 @@ Scraper.prototype.getImage = function(dom, callback) {
     return;
   }
   
-  for(var i = 0; i < images.length; i++) {
-    this.getImageArea(images[i], function(url, area) {
+  var scraperObj = this;
+  
+  images.forEach(function(image) {
+    scraperObj.getImageArea(image, function(url, area) {
       count--;
       if(area > biggestArea) {
         biggestArea = area;
@@ -110,7 +112,7 @@ Scraper.prototype.getImage = function(dom, callback) {
       }
       if(!count) callback(biggestImage);
     });
-  }
+  });
 };
 
 Scraper.prototype.getImageUrls = function(dom) {
