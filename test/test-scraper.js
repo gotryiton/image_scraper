@@ -1,8 +1,8 @@
 require('../scraper.js');
 var fs = require('fs');
 
-var metaPage = fs.readFileSync('./test_pages/biggest-image-meta-tags-page.html').toString();
-var ogPage = fs.readFileSync('./test_pages/open-graph-page.html').toString();
+var metaPage = fs.readFileSync(__dirname + '/test_data/biggest-image-meta-tags-page.html').toString();
+var ogPage = fs.readFileSync(__dirname + '/test_data/open-graph-page.html').toString();
 
 exports['title'] = function(test) {
   var sc = new Scraper('http://www.gotryiton.com/');
@@ -28,18 +28,16 @@ exports['og-image'] = function(test) {
 
 exports['image-area'] = function(test) {
   var sc = new Scraper('http://www.gotryiton.com/');
-  sc.getImageArea('fire-lizard.jpg', function(image, area){
+  sc.getImageArea(__dirname + '/test_data/fire-lizard.jpg', function(image, area){
     test.equal(area, 127200);
     test.done();
   });
 };
 
-exports['get-abs-url'] = function(test) {
+exports['abs-url'] = function(test) {
   var sc = new Scraper('http://www.gotryiton.com/');
   test.equal(sc.getAbsUrl('/foo/bar.baz'), 'http://www.gotryiton.com/foo/bar.baz');
   var sc = new Scraper('http://www.gotryiton.com/GTIO');
   test.equal(sc.getAbsUrl('//www.gotryiton.com/foo/bar.baz'), 'http://www.gotryiton.com/foo/bar.baz');
   test.done();
 };
-
-// untested getImageUrls
