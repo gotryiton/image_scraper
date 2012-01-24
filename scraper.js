@@ -5,15 +5,11 @@ var request = require('request'),
 Scraper = function(url) {
   this.url = url;
 };
-
-Scraper.prototype.getUrl = function() {
-  return this.url;
-};
   
 Scraper.prototype.getBody = function(callback) {
-  var standard = '<meta property="og:title" content="Something went wrong!" />' +
-                 '<meta property="og:image" content="http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg" />' +
-                 '<meta property="og:description" content="That doesn\'t look like a working URL." />';
+  var standard = '<meta property="og:title" content="Something went wrong!" />\
+                  <meta property="og:image" content="http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg" />\
+                  <meta property="og:description" content="That doesn\'t look like a working URL." />';
   try {
     request({url:this.url}, function (error, response, body) {
       if (error || response.statusCode != 200) {
@@ -29,11 +25,8 @@ Scraper.prototype.getBody = function(callback) {
   }
 };
 
-Scraper.prototype.getDom = function(callback) {
-  this.getBody(function(body) {
-    var dom = libxmljs.parseHtmlString(body);
-    callback(dom);
-  });
+Scraper.prototype.getDom = function(string) {
+  return libxmljs.parseHtmlString(string);
 };
 
 Scraper.prototype.getTitle = function(dom) {
@@ -68,17 +61,20 @@ Scraper.prototype.getDescription = function(dom) {
   return description;
 };
 
+// clean up this thing, http://stackoverflow.com/a/5211077/399268 maybe?
 Scraper.prototype.getAbsUrl = function(imageUrl) {
   var url = this.url;
-  var twoSlice = imageUrl.substr(2);
+  var twoSlice = imageUrl.slice(0, 2);
   if(twoSlice == '//'){
     imageUrl = 'http:' + imageUrl;
-  } else if(twoSlice == '..'){
-    var split = url.split('/');
-    imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
+  // } else if(twoSlice == '..'){
+  //   var split = url.split('/');
+  //   imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
   } else if(imageUrl.slice(0, 4).toLowerCase() != 'http') {
     // handle the case where the URL starts with folder name and not '/'
+    // console.log(imageUrl);
     if (imageUrl.charAt(0) != '/') imageUrl = '/' + imageUrl;
+    // console.log(imageUrl);
     var split = url.split('/');
     imageUrl = split[0] + '//' + split[2] + imageUrl;
   }
@@ -111,6 +107,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   var scraperObj = this;
   
+  // don't change this to a for loop
   images.forEach(function(image) {
     scraperObj.getImageArea(image, function(url, area) {
       count--;
@@ -168,7 +165,8 @@ Scraper.prototype.getImageArea = function(imageUrl, callback) {
 
 Scraper.prototype.getData = function(callback) {
   var scraperObj = this;
-  this.getDom(function(dom) {
+  this.getBody(function(body) {
+    var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
     scraperObj.getImage(dom, function(image) {
