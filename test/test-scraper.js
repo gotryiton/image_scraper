@@ -1,8 +1,8 @@
 require('../scraper.js');
 var fs = require('fs');
 
-var metaPage = fs.readFileSync(__dirname + '/test_data/biggest-image-meta-tags-page.html').toString();
-var ogPage = fs.readFileSync(__dirname + '/test_data/open-graph-page.html').toString();
+var metaPage = fs.readFileSync(__dirname + '/test_helpers/biggest-image-meta-tags-page.html').toString();
+var ogPage = fs.readFileSync(__dirname + '/test_helpers/open-graph-page.html').toString();
 
 exports['title'] = function(test) {
   var sc = new Scraper('http://www.gotryiton.com/');
@@ -28,7 +28,7 @@ exports['og-image'] = function(test) {
 
 exports['image-area'] = function(test) {
   var sc = new Scraper('http://www.gotryiton.com/');
-  sc.getImageArea(__dirname + '/test_data/fire-lizard.jpg', function(image, area){
+  sc.getImageArea(__dirname + '/test_helpers/fire-lizard.jpg', function(image, area){
     test.equal(area, 127200);
     test.done();
   });
