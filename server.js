@@ -3,7 +3,7 @@ var restify = require('restify');
 
 var server = restify.createServer();
 
-server.post('/biggest-image', function(req, res) {
+server.post('/scraper', function(req, res) {
   var url = req.params.url;
   var sc = new Scraper(url);
   sc.getData(function(data) {
