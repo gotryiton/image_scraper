@@ -1,5 +1,5 @@
 {
-  "name": "image-scraper",
+  "name": "scraper",
   "version": "0.1.9",
   "dependencies": {
     "libxmljs": "0.5.x",
