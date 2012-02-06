@@ -7,21 +7,18 @@ Scraper = function(url) {
 };
   
 Scraper.prototype.getBody = function(callback) {
-  var standard = '<meta property="og:title" content="Something went wrong!" />\
-                  <meta property="og:image" content="http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg" />\
-                  <meta property="og:description" content="That doesn\'t look like a working URL." />';
   try {
     request({url:this.url}, function (error, response, body) {
       if (error || response.statusCode != 200) {
       // console.log('Could not fetch the URL', error);
-        callback(standard);
+        callback(false);
       } else {
         callback(body);
       }
     });
   } catch(e) {
     // console.log('There was an error for', this.url, e);
-    callback(standard);
+    callback(false);
   }
 };
 
@@ -30,7 +27,7 @@ Scraper.prototype.getDom = function(string) {
 };
 
 Scraper.prototype.getTitle = function(dom) {
-  var title = "What's in a title...";
+  var title = null;
   var ogTitleElement = dom.get('//meta[@property="og:title"]');
   if(ogTitleElement != undefined) {
     title = ogTitleElement.attr('content').value();
@@ -50,7 +47,7 @@ Scraper.prototype.getTitle = function(dom) {
 };
 
 Scraper.prototype.getDescription = function(dom) {
-  var description = 'No words can describe this!';
+  var description = null;
   var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
   if(ogDescriptionElement != undefined) {
     description = ogDescriptionElement.attr('content').value();
@@ -83,7 +80,7 @@ Scraper.prototype.getAbsUrl = function(imageUrl) {
 
 Scraper.prototype.getImage = function(dom, callback) {
   var biggestArea = -1;
-  var biggestImage = 'http://stage.assets.gotryiton.s3.amazonaws.com/outfits/de69108096c07298adb6c6ac261cf40a_137_182.jpg';
+  var biggestImage = null;
   
   // get open-graph image and return if you get it
   var ogImageElement = dom.get('//meta[@property="og:image"]');
@@ -166,11 +163,15 @@ Scraper.prototype.getImageArea = function(imageUrl, callback) {
 Scraper.prototype.getData = function(callback) {
   var scraperObj = this;
   this.getBody(function(body) {
+    if (!body) {
+      callback({'status': 'error'});
+      return;
+    }
     var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
     scraperObj.getImage(dom, function(image) {
-      callback({'title': title, 'description': description, 'image': image});
+      callback({'status': 'ok', 'title': title, 'description': description, 'image': image});
     });
   });
 };
