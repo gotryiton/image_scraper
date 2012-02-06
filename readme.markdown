@@ -31,3 +31,20 @@ For testing you would need to install `nodeunit` which is a part of `devDependen
 To run tests simply point `nodeunit` to the test file.
 
     nodeunit ./test/test-scraper.js
+
+Response
+--------
+Sample response would look like
+
+    {
+        'status': 'ok',
+        'title': 'Black skirt - GAP',
+        'description': null,
+        'image': null
+    }
+
+when fetching the URL doesn't cause errors. And when it does the response would be
+
+    {
+        'status': 'error'
+    }
