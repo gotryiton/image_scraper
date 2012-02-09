@@ -13,20 +13,14 @@ require 'capistrano/ext/multistage'
 set :deploy_via, :remote_cache
 set :copy_exclude, [".git", ".DS_Store", ".gitignore", ".gitmodules"]
 
-namespace :deploy do
-  task :start, :roles => :app, :except => { :no_release => true } do
-    run "#{sudo} start #{application}"
-  end
-  
-  task :stop, :roles => :app, :except => { :no_release => true } do
-    run "#{sudo} stop #{application}"
-  end
-  
+namespace :scraper do
   task :restart, :roles => :app, :except => { :no_release => true } do
-    run "#{sudo} restart #{application}"
+    run "#{sudo} service #{application} restart"
   end
 end
 
 task :uname do
   run "uname -a"
 end
+
+after "deploy:symlink", "scraper:restart"
