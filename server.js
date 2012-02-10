@@ -1,12 +1,12 @@
-require('./scraper.js');
-var restify = require('restify');
+var sc = require('./scraper'),
+    restify = require('restify');
 
 var server = restify.createServer();
 
 server.post('/scraper', function(req, res) {
   var url = req.params.url;
-  var sc = new Scraper(url);
-  sc.getData(function(data) {
+  var scInstance = new sc.scraper(url);
+  scInstance.getData(function(data) {
     res.send(200, data);
   });
 });
