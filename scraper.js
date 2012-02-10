@@ -11,14 +11,14 @@ Scraper.prototype.getBody = function(callback) {
   try {
     request({url: this.url, headers: {'User-Agent': userAgent}}, function (error, response, body) {
       if (error || response.statusCode != 200) {
-      // console.log('Could not fetch the URL', error);
+      console.log('Could not fetch the URL', url); //, error);
         callback(false);
       } else {
         callback(body);
       }
     });
   } catch(e) {
-    // console.log('There was an error for', this.url, e);
+    console.log('Request exception', this.url); //, e);
     callback(false);
   }
 };
@@ -70,9 +70,9 @@ Scraper.prototype.getAbsUrl = function(imageUrl) {
   //   imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
   } else if(imageUrl.slice(0, 4).toLowerCase() != 'http') {
     // handle the case where the URL starts with folder name and not '/'
-    // console.log(imageUrl);
-    if (imageUrl.charAt(0) != '/') imageUrl = '/' + imageUrl;
-    // console.log(imageUrl);
+    if (imageUrl.charAt(0) != '/') {
+      imageUrl = '/' + imageUrl;
+    }
     var split = url.split('/');
     imageUrl = split[0] + '//' + split[2] + imageUrl;
   }
@@ -98,7 +98,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   // no images? :(
   if(!count) {
-    // console.log('No images found for', this.url);
+    console.log('No images found for', this.url);
     callback(biggestImage);
     return;
   }
@@ -127,7 +127,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       // some people have an img tag with no src attribute - welcome to the internet
       var imageUrl = imageElements[i].attr('src').value();
     } catch(e) {
-      // console.log('Skipping element ' + imageElements[i] + ' because there was error', e);
+      console.log('Skipping element ' + imageElements[i] + ' because there was error'); //, e);
       continue;
     }
     
@@ -143,9 +143,9 @@ Scraper.prototype.getImageUrls = function(dom) {
 
 Scraper.prototype.getImageArea = function(imageUrl, callback) {
   im.identify(imageUrl, function(err, features) {
-    
+    console.log('Image Magick start', imageUrl);
     if(err) {
-      // console.log('There was an Image Magick error getting', imageUrl, err);
+      console.log('Image Magick error', imageUrl); //, err);
       callback(imageUrl, -1);
       return;
     }
