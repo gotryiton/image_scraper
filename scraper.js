@@ -4,21 +4,21 @@ var request = require('request'),
 
 var Scraper = function(url) {
   this.url = url;
+  this.userAgent = 'Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, likeGecko) Version/3.0 Mobile/1A543a Safari/419.3';
 };
   
 Scraper.prototype.getBody = function(callback) {
-  var userAgent = 'Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, likeGecko) Version/3.0 Mobile/1A543a Safari/419.3';
   try {
-    request({url: this.url, headers: {'User-Agent': userAgent}}, function (error, response, body) {
+    request({url: this.url, headers: {'User-Agent': this.userAgent}}, function (error, response, body) {
       if (error || response.statusCode != 200) {
-      console.log('Could not fetch the URL', url); //, error);
+      // console.log('Could not fetch the URL', url); //, error);
         callback(false);
       } else {
         callback(body);
       }
     });
   } catch(e) {
-    console.log('Request exception', this.url); //, e);
+    // console.log('Request exception', this.url); //, e);
     callback(false);
   }
 };
@@ -98,16 +98,15 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   // no images? :(
   if(!count) {
-    console.log('No images found for', this.url);
+    // console.log('No images found for', this.url);
     callback(biggestImage);
     return;
   }
   
   var scraperObj = this;
   
-  // don't change this to a for loop
   images.forEach(function(image) {
-    scraperObj.getImageArea(image, function(url, area) {
+    scraperObj.getImageSize(image, function(url, area) {
       count--;
       if(area > biggestArea) {
         biggestArea = area;
@@ -127,7 +126,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       // some people have an img tag with no src attribute - welcome to the internet
       var imageUrl = imageElements[i].attr('src').value();
     } catch(e) {
-      console.log('Skipping element ' + imageElements[i] + ' because there was error'); //, e);
+      // console.log('Skipping element ' + imageElements[i] + ' because there was error'); //, e);
       continue;
     }
     
@@ -141,24 +140,25 @@ Scraper.prototype.getImageUrls = function(dom) {
   return imageUrls;
 };
 
-Scraper.prototype.getImageArea = function(imageUrl, callback) {
-  im.identify(imageUrl, function(err, features) {
-    console.log('Image Magick start', imageUrl);
-    if(err) {
-      console.log('Image Magick error', imageUrl); //, err);
-      callback(imageUrl, -1);
-      return;
-    }
-
-    var skip = features['format'] == 'GIF' || features['height'] / features['width'] < 0.76;
-    if(skip) {
-      callback(imageUrl, -1);
-      return;
-    }
-    
-    var area = features['height'] * features['width'];
-    callback(imageUrl, area);
-  });
+Scraper.prototype.getImageSize = function(imageUrl, callback) {
+  try {
+    request({url: imageUrl, headers: {'User-Agent': this.userAgent, 'Range': 'bytes=0-0'}}, function (error, response, body) {
+      if (error || response.statusCode != 206) {
+        callback(imageUrl, -1);
+      } else {
+        var range = response['headers']['content-range'];
+        console.log(callback, imageUrl);
+        if (range == undefined) {
+          callback(imageUrl, -1);
+          return;
+        }
+        var size = parseInt(range.split('/')[1], 10);
+        callback(imageUrl, size);
+      }
+    });
+  } catch(e) {
+    callback(imageUrl, -1);
+  }
 };
 
 Scraper.prototype.getData = function(callback) {
