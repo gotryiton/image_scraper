@@ -2,7 +2,7 @@ var request = require('request'),
     libxmljs = require("libxmljs"),
     im = require('imagemagick');
 
-Scraper = function(url) {
+var Scraper = function(url) {
   this.url = url;
 };
   
@@ -176,3 +176,5 @@ Scraper.prototype.getData = function(callback) {
     });
   });
 };
+
+exports.scraper = Scraper;

@@ -5,7 +5,8 @@
     "libxmljs": "0.5.x",
     "imagemagick": "0.1.x",
     "restify": "0.5.x",
-    "request": "2.9.x"
+    "request": "2.9.x",
+    "loggly": "0.3.x"
  },
  "devDependencies": {
      "nodeunit": "0.6.x"
