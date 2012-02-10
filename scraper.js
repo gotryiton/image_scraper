@@ -1,6 +1,5 @@
 var request = require('request'),
-    libxmljs = require("libxmljs"),
-    im = require('imagemagick');
+    libxmljs = require("libxmljs");
 
 var Scraper = function(url) {
   this.url = url;
