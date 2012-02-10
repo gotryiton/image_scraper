@@ -29,7 +29,7 @@ Scraper.prototype.getDom = function(string) {
 Scraper.prototype.getTitle = function(dom) {
   var title = null;
   var ogTitleElement = dom.get('//meta[@property="og:title"]');
-  if(ogTitleElement != undefined) {
+  if (ogTitleElement != undefined) {
     title = ogTitleElement.attr('content').value();
   } else {
     // get meta data title or page title
@@ -37,7 +37,7 @@ Scraper.prototype.getTitle = function(dom) {
       title = dom.get('//meta[@name="title"]').attr('content').value();
     } catch (e) {
       titleElement = dom.get('//title');
-      if(titleElement != undefined) {
+      if (titleElement != undefined) {
         title = titleElement.text();
       }
     }
@@ -49,11 +49,13 @@ Scraper.prototype.getTitle = function(dom) {
 Scraper.prototype.getDescription = function(dom) {
   var description = null;
   var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
-  if(ogDescriptionElement != undefined) {
+  if (ogDescriptionElement != undefined) {
     description = ogDescriptionElement.attr('content').value();
   } else {
     var descriptionElement = dom.get('//meta[@name="description"]');
-    if(descriptionElement != undefined) description = descriptionElement.attr('content').value();
+    if (descriptionElement != undefined) {
+      description = descriptionElement.attr('content').value();
+    }
   }
   return description;
 };
@@ -62,12 +64,12 @@ Scraper.prototype.getDescription = function(dom) {
 Scraper.prototype.getAbsUrl = function(imageUrl) {
   var url = this.url;
   var twoSlice = imageUrl.slice(0, 2);
-  if(twoSlice == '//'){
+  if (twoSlice == '//'){
     imageUrl = 'http:' + imageUrl;
-  // } else if(twoSlice == '..'){
+  // } else if (twoSlice == '..'){
   //   var split = url.split('/');
   //   imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
-  } else if(imageUrl.slice(0, 4).toLowerCase() != 'http') {
+  } else if (imageUrl.slice(0, 4).toLowerCase() != 'http') {
     // handle the case where the URL starts with folder name and not '/'
     if (imageUrl.charAt(0) != '/') {
       imageUrl = '/' + imageUrl;
@@ -85,7 +87,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   // get open-graph image and return if you get it
   var ogImageElement = dom.get('//meta[@property="og:image"]');
   
-  if(ogImageElement != undefined) {
+  if (ogImageElement != undefined) {
     var ogImage = ogImageElement.attr('content').value();
     callback(ogImage);
     return;
@@ -96,7 +98,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   count = images.length;
   
   // no images? :(
-  if(!count) {
+  if (!count) {
     // console.log('No images found for', this.url);
     callback(biggestImage);
     return;
@@ -107,11 +109,11 @@ Scraper.prototype.getImage = function(dom, callback) {
   images.forEach(function(image) {
     scraperObj.getImageSize(image, function(url, area) {
       count--;
-      if(area > biggestArea) {
+      if (area > biggestArea) {
         biggestArea = area;
         biggestImage = url;
       }
-      if(!count) callback(biggestImage);
+      if (!count) callback(biggestImage);
     });
   });
 };
@@ -120,7 +122,7 @@ Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageElements = dom.find('//img');
   var count = imageElements.length;
-  for(var i = 0; i < count; i++) {
+  for (var i = 0; i < count; i++) {
     try {
       // some people have an img tag with no src attribute - welcome to the internet
       var imageUrl = imageElements[i].attr('src').value();
@@ -130,7 +132,7 @@ Scraper.prototype.getImageUrls = function(dom) {
     }
     
     // ignoring GIFs, they sometimes are big and they almost never are product images
-    if(imageUrl == '' || imageUrl.substr(-4) == '.gif') {
+    if (imageUrl == '' || imageUrl.substr(-4) == '.gif') {
       continue;
     }
     
@@ -146,7 +148,6 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
         callback(imageUrl, -1);
       } else {
         var range = response['headers']['content-range'];
-        console.log(callback, imageUrl);
         if (range == undefined) {
           callback(imageUrl, -1);
           return;
