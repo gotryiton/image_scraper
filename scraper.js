@@ -8,7 +8,7 @@ Scraper = function(url) {
   
 Scraper.prototype.getBody = function(callback) {
   try {
-    request({url:this.url}, function (error, response, body) {
+    request({url: this.url, headers: {'User-Agent': 'Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en)'}}, function (error, response, body) {
       if (error || response.statusCode != 200) {
       // console.log('Could not fetch the URL', error);
         callback(false);
