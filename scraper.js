@@ -81,7 +81,7 @@ Scraper.prototype.getAbsUrl = function(imageUrl) {
 };
 
 Scraper.prototype.getImage = function(dom, callback) {
-  var biggestArea = -1;
+  var biggestArea = 1024;
   var biggestImage = null;
   
   // get open-graph image and return if you get it
