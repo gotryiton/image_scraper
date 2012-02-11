@@ -95,7 +95,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   // if no open-graph image pick the biggest image
   var images = this.getImageUrls(dom);
-  count = images.length;
+  var count = images.length;
   
   // no images? :(
   if (!count) {
