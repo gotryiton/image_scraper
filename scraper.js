@@ -77,7 +77,9 @@ Scraper.prototype.getAbsUrl = function(imageUrl) {
     var split = url.split('/');
     imageUrl = split[0] + '//' + split[2] + imageUrl;
   }
-  return encodeURI(imageUrl);
+  // returns encodeURI causes problems with Topshop
+  // return encodeURI(imageUrl);
+  return imageUrl;
 };
 
 Scraper.prototype.getImage = function(dom, callback) {
@@ -136,7 +138,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       continue;
     }
     
-    imageUrls.push(encodeURI(this.getAbsUrl(imageUrl)));
+    imageUrls.push(this.getAbsUrl(imageUrl));
   }
   return imageUrls;
 };
