@@ -2,8 +2,8 @@ var request = require('request'),
     libxmljs = require("libxmljs");
 
 var Scraper = function(url) {
-  this.url = url;
-  this.userAgent = 'Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, likeGecko) Version/3.0 Mobile/1A543a Safari/419.3';
+  this.url = decodeURI(url);
+  this.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
   this.headers = {'User-Agent': this.userAgent};
 };
   
@@ -148,6 +148,7 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
   try {
     request.head({url: imageUrl, headers: this.headers}, function (error, response, body) {
       if (error || response.statusCode != 200) {
+        callback(imageUrl, -1);
         return;
       }
       var range = response.headers['content-length'];
@@ -155,6 +156,7 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
       callback(imageUrl, size);
     });
   } catch(e) {
+    callback(imageUrl, -1);
     return;
   }
 };
