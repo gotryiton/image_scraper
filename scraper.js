@@ -103,28 +103,6 @@ Scraper.prototype.getImage = function(dom, callback) {
   });
 };
 
-// clean up this thing, http://stackoverflow.com/a/5211077/399268 maybe?
-Scraper.prototype.getAbsUrl = function(imageUrl) {
-  var url = this.url;
-  var twoSlice = imageUrl.slice(0, 2);
-  if (twoSlice == '//'){
-    imageUrl = 'http:' + imageUrl;
-  // } else if (twoSlice == '..'){
-  //   var split = url.split('/');
-  //   imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
-  } else if (imageUrl.slice(0, 4).toLowerCase() != 'http') {
-    // handle the case where the URL starts with folder name and not '/'
-    if (imageUrl.charAt(0) != '/') {
-      imageUrl = '/' + imageUrl;
-    }
-    var split = url.split('/');
-    imageUrl = split[0] + '//' + split[2] + imageUrl;
-  }
-  // returns encodeURI causes problems with Topshop
-  // return encodeURI(imageUrl);
-  return imageUrl;
-};
-
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageElements = dom.find('//img');
@@ -143,7 +121,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       continue;
     }
     
-    imageUrls.push(this.getAbsUrl(imageUrl));
+    imageUrls.push(u.resolve(this.url, imageUrl));
   }
   return imageUrls;
 };
