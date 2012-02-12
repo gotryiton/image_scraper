@@ -4,11 +4,12 @@ var request = require('request'),
 var Scraper = function(url) {
   this.url = url;
   this.userAgent = 'Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, likeGecko) Version/3.0 Mobile/1A543a Safari/419.3';
+  this.headers = {'User-Agent': this.userAgent};
 };
   
 Scraper.prototype.getBody = function(callback) {
   try {
-    request({url: this.url, headers: {'User-Agent': this.userAgent}}, function (error, response, body) {
+    request.get({url: this.url, headers: this.headers}, function (error, response, body) {
       if (error || response.statusCode != 200) {
       // console.log('Could not fetch the URL', url); //, error);
         callback(false);
@@ -145,21 +146,16 @@ Scraper.prototype.getImageUrls = function(dom) {
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   try {
-    request({url: imageUrl, headers: {'User-Agent': this.userAgent, 'Range': 'bytes=0-0'}}, function (error, response, body) {
-      if (error || response.statusCode != 206) {
-        callback(imageUrl, -1);
-      } else {
-        var range = response['headers']['content-range'];
-        if (range == undefined) {
-          callback(imageUrl, -1);
-          return;
-        }
-        var size = parseInt(range.split('/')[1], 10);
-        callback(imageUrl, size);
+    request.head({url: imageUrl, headers: this.headers}, function (error, response, body) {
+      if (error || response.statusCode != 200) {
+        return;
       }
+      var range = response.headers['content-length'];
+      var size = parseInt(range, 10);
+      callback(imageUrl, size);
     });
   } catch(e) {
-    callback(imageUrl, -1);
+    return;
   }
 };
 
