@@ -84,7 +84,7 @@ Scraper.prototype.getAbsUrl = function(imageUrl) {
 };
 
 Scraper.prototype.getImage = function(dom, callback) {
-  var biggestArea = 10240;
+  var biggestArea = 1024;
   var biggestImage = null;
   
   // get open-graph image and return if you get it
@@ -148,6 +148,7 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
   try {
     request.head({url: imageUrl, headers: this.headers}, function (error, response, body) {
       if (error || response.statusCode != 200) {
+        callback(imageUrl, -1);
         return;
       }
       var range = response.headers['content-length'];
@@ -155,6 +156,7 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
       callback(imageUrl, size);
     });
   } catch(e) {
+    callback(imageUrl, -1);
     return;
   }
 };
