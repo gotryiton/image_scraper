@@ -1,14 +1,19 @@
 var request = require('request'),
-    libxmljs = require("libxmljs");
+    libxmljs = require("libxmljs"),
+    u = require("url");
 
 var Scraper = function(url) {
-  this.url = url;
-  this.userAgent = 'Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, likeGecko) Version/3.0 Mobile/1A543a Safari/419.3';
+  this.url = decodeURI(url);
+  this.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
+  this.headers = {'User-Agent': this.userAgent};
+  this.rules = {
+    'images.urbanoutfitters.com': this.urbanTransformers
+  };
 };
   
 Scraper.prototype.getBody = function(callback) {
   try {
-    request({url: this.url, headers: {'User-Agent': this.userAgent}}, function (error, response, body) {
+    request.get({url: this.url, headers: this.headers}, function (error, response, body) {
       if (error || response.statusCode != 200) {
       // console.log('Could not fetch the URL', url); //, error);
         callback(false);
@@ -60,28 +65,6 @@ Scraper.prototype.getDescription = function(dom) {
   return description;
 };
 
-// clean up this thing, http://stackoverflow.com/a/5211077/399268 maybe?
-Scraper.prototype.getAbsUrl = function(imageUrl) {
-  var url = this.url;
-  var twoSlice = imageUrl.slice(0, 2);
-  if (twoSlice == '//'){
-    imageUrl = 'http:' + imageUrl;
-  // } else if (twoSlice == '..'){
-  //   var split = url.split('/');
-  //   imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
-  } else if (imageUrl.slice(0, 4).toLowerCase() != 'http') {
-    // handle the case where the URL starts with folder name and not '/'
-    if (imageUrl.charAt(0) != '/') {
-      imageUrl = '/' + imageUrl;
-    }
-    var split = url.split('/');
-    imageUrl = split[0] + '//' + split[2] + imageUrl;
-  }
-  // returns encodeURI causes problems with Topshop
-  // return encodeURI(imageUrl);
-  return imageUrl;
-};
-
 Scraper.prototype.getImage = function(dom, callback) {
   var biggestArea = 10240;
   var biggestImage = null;
@@ -120,6 +103,28 @@ Scraper.prototype.getImage = function(dom, callback) {
   });
 };
 
+// clean up this thing, http://stackoverflow.com/a/5211077/399268 maybe?
+Scraper.prototype.getAbsUrl = function(imageUrl) {
+  var url = this.url;
+  var twoSlice = imageUrl.slice(0, 2);
+  if (twoSlice == '//'){
+    imageUrl = 'http:' + imageUrl;
+  // } else if (twoSlice == '..'){
+  //   var split = url.split('/');
+  //   imageUrl = split[0] + '//' + split[2] + imageUrl.substr(2);
+  } else if (imageUrl.slice(0, 4).toLowerCase() != 'http') {
+    // handle the case where the URL starts with folder name and not '/'
+    if (imageUrl.charAt(0) != '/') {
+      imageUrl = '/' + imageUrl;
+    }
+    var split = url.split('/');
+    imageUrl = split[0] + '//' + split[2] + imageUrl;
+  }
+  // returns encodeURI causes problems with Topshop
+  // return encodeURI(imageUrl);
+  return imageUrl;
+};
+
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageElements = dom.find('//img');
@@ -144,23 +149,34 @@ Scraper.prototype.getImageUrls = function(dom) {
 };
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
+  var imageUrl = this.hackUrl(imageUrl);
   try {
-    request({url: imageUrl, headers: {'User-Agent': this.userAgent, 'Range': 'bytes=0-0'}}, function (error, response, body) {
-      if (error || response.statusCode != 206) {
+    request.head({url: imageUrl, headers: this.headers}, function (error, response, body) {
+      if (error || response.statusCode != 200) {
         callback(imageUrl, -1);
-      } else {
-        var range = response['headers']['content-range'];
-        if (range == undefined) {
-          callback(imageUrl, -1);
-          return;
-        }
-        var size = parseInt(range.split('/')[1], 10);
-        callback(imageUrl, size);
+        return;
       }
+      var range = response.headers['content-length'];
+      var size = parseInt(range, 10);
+      callback(imageUrl, size);
     });
   } catch(e) {
     callback(imageUrl, -1);
+    return;
   }
+};
+
+Scraper.prototype.hackUrl = function(url) {
+  var parsedUrl = u.parse(url);
+  var host = parsedUrl.hostname;
+  if (this.rules[host] == undefined) {
+    return url;
+  }
+  return this.rules[host](url);
+};
+
+Scraper.prototype.urbanTransformers = function(url) {
+  return url.replace('$cat$', '$zoom$');
 };
 
 Scraper.prototype.getData = function(callback) {
