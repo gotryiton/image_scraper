@@ -1,10 +1,14 @@
 var request = require('request'),
-    libxmljs = require("libxmljs");
+    libxmljs = require("libxmljs"),
+    u = require("url");
 
 var Scraper = function(url) {
   this.url = decodeURI(url);
   this.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
   this.headers = {'User-Agent': this.userAgent};
+  this.rules = {
+    'images.urbanoutfitters.com': this.urbanTransformers
+  };
 };
   
 Scraper.prototype.getBody = function(callback) {
@@ -145,6 +149,8 @@ Scraper.prototype.getImageUrls = function(dom) {
 };
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
+  var imageUrl = this.hackUrl(imageUrl);
+  console.log(imageUrl);
   try {
     request.head({url: imageUrl, headers: this.headers}, function (error, response, body) {
       if (error || response.statusCode != 200) {
@@ -159,6 +165,19 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
     callback(imageUrl, -1);
     return;
   }
+};
+
+Scraper.prototype.hackUrl = function(url) {
+  var parsedUrl = u.parse(url);
+  var host = parsedUrl.hostname;
+  if (this.rules[host] == undefined) {
+    return url;
+  }
+  return this.rules[host](url);
+};
+
+Scraper.prototype.urbanTransformers = function(url) {
+  return url.replace('$cat$', '$zoom$');
 };
 
 Scraper.prototype.getData = function(callback) {
