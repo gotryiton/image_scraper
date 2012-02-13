@@ -27,4 +27,4 @@ task :uname do
   run "uname -a"
 end
 
-after "deploy:symlink", "scraper:restart"
+after "deploy:symlink", "scraper:reload"
