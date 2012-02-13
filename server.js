@@ -12,4 +12,3 @@ server.post('/scraper', function(req, res) {
 });
 
 module.exports = server;
-console.log("Server listening on port 3000");
