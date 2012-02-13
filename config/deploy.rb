@@ -17,6 +17,10 @@ namespace :scraper do
   task :restart, :roles => :app, :except => { :no_release => true } do
     run "#{sudo} service #{application} restart"
   end
+
+  task :reload, :roles => :app, :except => { :no_release => true } do
+    run "#{sudo} sv 2 #{application}"
+  end
 end
 
 task :uname do
