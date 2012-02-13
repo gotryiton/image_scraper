@@ -9,20 +9,25 @@ var Scraper = function(url) {
   this.rules = {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
+  this.minImageSize = 10240;
+  this.getHosts = {
+    'm.shopbop.com': 'GET',
+    'www.shopbop.com': 'GET'
+  };
 };
   
 Scraper.prototype.getBody = function(callback) {
   try {
     request.get({url: this.url, headers: this.headers}, function (error, response, body) {
       if (error || response.statusCode != 200) {
-      // console.log('Could not fetch the URL', url); //, error);
+      console.log('Could not fetch the URL', url, error);
         callback(false);
       } else {
         callback(body);
       }
     });
   } catch(e) {
-    // console.log('Request exception', this.url); //, e);
+    console.log('Request exception', this.url, e);
     callback(false);
   }
 };
@@ -66,16 +71,17 @@ Scraper.prototype.getDescription = function(dom) {
 };
 
 Scraper.prototype.getImage = function(dom, callback) {
-  var biggestArea = 10240;
+  var biggestSize = this.minImageSize;
   var biggestImage = null;
+  var alternateImages = [];
   
   // get open-graph image and return if you get it
   var ogImageElement = dom.get('//meta[@property="og:image"]');
   
   if (ogImageElement != undefined) {
     var ogImage = ogImageElement.attr('content').value();
-    callback(ogImage);
-    return;
+    biggestSize = Number.MAX_VALUE;
+    biggestImage = ogImage;
   }
   
   // if no open-graph image pick the biggest image
@@ -84,21 +90,24 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   // no images? :(
   if (!count) {
-    // console.log('No images found for', this.url);
-    callback(biggestImage);
+    console.log('No images found for', this.url);
+    callback(biggestImage, alternateImages);
     return;
   }
   
   var scraperObj = this;
   
   images.forEach(function(image) {
-    scraperObj.getImageSize(image, function(url, area) {
+    scraperObj.getImageSize(image, function(url, size) {
       count--;
-      if (area > biggestArea) {
-        biggestArea = area;
-        biggestImage = url;
+      if (size > scraperObj.minImageSize) {
+        if (size > biggestSize) {
+          biggestSize = size;
+          biggestImage = url;
+        }
+        alternateImages.push(url);
       }
-      if (!count) callback(biggestImage);
+      if (!count) callback(biggestImage, alternateImages);
     });
   });
 };
@@ -128,10 +137,25 @@ Scraper.prototype.getImageUrls = function(dom) {
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var imageUrl = this.hackUrl(imageUrl);
+  
+  var options = {
+    url: imageUrl,
+    headers: this.headers
+  };
+  
+  var host = u.parse(this.url).host;
+  if (this.getHosts[host] == undefined) {
+    options.method = 'HEAD';
+  } else {
+    options.method = 'GET';
+  }
+  
+  console.log('Attempting to fetch Content-Lenght for', imageUrl);
   try {
-    request.head({url: imageUrl, headers: this.headers}, function (error, response, body) {
+    request(options, function (error, response, body) {
       if (error || response.statusCode != 200) {
         callback(imageUrl, -1);
+        console.log('Error requesting', imageUrl);
         return;
       }
       var range = response.headers['content-length'];
@@ -140,17 +164,16 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
     });
   } catch(e) {
     callback(imageUrl, -1);
-    return;
+    console.log('Expection', e, 'for', imageUrl);
   }
 };
 
 Scraper.prototype.hackUrl = function(url) {
   var parsedUrl = u.parse(url);
-  var host = parsedUrl.hostname;
-  if (this.rules[host] == undefined) {
+  if (this.rules[parsedUrl.host] == undefined) {
     return url;
   }
-  return this.rules[host](url);
+  return this.rules[parsedUrl.host](url);
 };
 
 Scraper.prototype.urbanTransformers = function(url) {
@@ -167,8 +190,8 @@ Scraper.prototype.getData = function(callback) {
     var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
-    scraperObj.getImage(dom, function(image) {
-      callback({'status': 'ok', 'title': title, 'description': description, 'image': image});
+    scraperObj.getImage(dom, function(image, alternateImages) {
+      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages});
     });
   });
 };
