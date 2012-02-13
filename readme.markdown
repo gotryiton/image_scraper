@@ -14,15 +14,23 @@ After cloning the repo you will want to run
 
     npm install
 
-from the root directory of the project to install all dependencies.
+from the root directory of the project to install all dependencies. Then:
+
+    npm install -g up
+
+To install the up server.
 
 Running the Server
 ------------------
 From the project root directory run
 
-    node server.js
+    NODE_ENV=development up server.js
 
-which will bring up the server on `http://localhost:1337/` and listen to post requests for the variable `url` on `http://localhost:1337/biggest-image` for the webpage address.
+which will bring up the server on `http://localhost:3000/` and listen to post requests for the variable `url` on `http://localhost:3000/scraper` for the webpage address.
+
+Alternatively, you can set the NODE_ENV variable in you bash or zsh rc so that all you have to do is run:
+
+    up server.js
 
 Testing
 -------
