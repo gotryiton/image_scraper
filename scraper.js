@@ -96,11 +96,11 @@ Scraper.prototype.getImage = function(dom, callback) {
   images.forEach(function(image) {
     scraperObj.getImageSize(image, function(url, size) {
       count--;
-      if (size > biggestSize) {
-        biggestSize = size;
-        biggestImage = url;
-      }
       if (size > scraperObj.minImageSize) {
+        if (size > biggestSize) {
+          biggestSize = size;
+          biggestImage = url;
+        }
         potentialImages.push(url);
       }
       if (!count) callback(biggestImage, potentialImages);
