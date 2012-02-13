@@ -50,7 +50,7 @@ Sample response would look like
         'title': 'Black skirt - GAP',
         'description': null,
         'image': 'http://path/to/biggest/image',
-        'potentialImages': [
+        'alternateImages': [
             'http://foo/bar',
             'http://for/bar/baz'
         ]

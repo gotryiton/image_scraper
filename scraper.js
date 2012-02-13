@@ -69,7 +69,7 @@ Scraper.prototype.getDescription = function(dom) {
 Scraper.prototype.getImage = function(dom, callback) {
   var biggestSize = this.minImageSize;
   var biggestImage = null;
-  var potentialImages = [];
+  var alternateImages = [];
   
   // get open-graph image and return if you get it
   var ogImageElement = dom.get('//meta[@property="og:image"]');
@@ -87,7 +87,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   // no images? :(
   if (!count) {
     console.log('No images found for', this.url);
-    callback(biggestImage, potentialImages);
+    callback(biggestImage, alternateImages);
     return;
   }
   
@@ -101,9 +101,9 @@ Scraper.prototype.getImage = function(dom, callback) {
           biggestSize = size;
           biggestImage = url;
         }
-        potentialImages.push(url);
+        alternateImages.push(url);
       }
-      if (!count) callback(biggestImage, potentialImages);
+      if (!count) callback(biggestImage, alternateImages);
     });
   });
 };
@@ -174,8 +174,8 @@ Scraper.prototype.getData = function(callback) {
     var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
-    scraperObj.getImage(dom, function(image, potentialImages) {
-      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'potentialImages': potentialImages});
+    scraperObj.getImage(dom, function(image, alternateImages) {
+      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages});
     });
   });
 };
