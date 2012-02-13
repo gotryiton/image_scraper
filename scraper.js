@@ -10,6 +10,10 @@ var Scraper = function(url) {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
   this.minImageSize = 10240;
+  this.getHosts = {
+    'm.shopbop.com': 'GET',
+    'www.shopbop.com': 'GET'
+  };
 };
   
 Scraper.prototype.getBody = function(callback) {
@@ -133,9 +137,22 @@ Scraper.prototype.getImageUrls = function(dom) {
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var imageUrl = this.hackUrl(imageUrl);
+  
+  var options = {
+    url: imageUrl,
+    headers: this.headers
+  };
+  
+  var host = u.parse(this.url).host;
+  if (this.getHosts[host] == undefined) {
+    options.method = 'HEAD';
+  } else {
+    options.method = 'GET';
+  }
+  
   console.log('Attempting to fetch Content-Lenght for', imageUrl);
   try {
-    request.head({url: imageUrl, headers: this.headers}, function (error, response, body) {
+    request(options, function (error, response, body) {
       if (error || response.statusCode != 200) {
         callback(imageUrl, -1);
         console.log('Error requesting', imageUrl);
@@ -153,11 +170,10 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
 
 Scraper.prototype.hackUrl = function(url) {
   var parsedUrl = u.parse(url);
-  var host = parsedUrl.hostname;
-  if (this.rules[host] == undefined) {
+  if (this.rules[parsedUrl.host] == undefined) {
     return url;
   }
-  return this.rules[host](url);
+  return this.rules[parsedUrl.host](url);
 };
 
 Scraper.prototype.urbanTransformers = function(url) {
