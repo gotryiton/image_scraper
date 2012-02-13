@@ -1,12 +1,13 @@
-Image Scraper
-=============
-Node.js server written to pick Facebook Open Graph Protocol image. If that isn't available it picks out the largest image on the page.
+Scraper
+=======
+Image: Picks Facebook Open Graph Protocol (OG) image. If that isn't available it picks out the largest image on the page.
+Title: OG title else title in meta tags else HTML title
+Description: OG description else meta description
 
 Pre-Requisites
 --------------
  1. Install `node.js` and `npm`.
- 2. Uses `libxml2` for parsing so you need this installed on the server.
- 3. Needs `Image Magic` for figuring out image size and image type.
+ 2. Install `libxml2` which is used for parsing.
 
 Install Guide
 -------------
@@ -48,7 +49,11 @@ Sample response would look like
         'status': 'ok',
         'title': 'Black skirt - GAP',
         'description': null,
-        'image': null
+        'image': 'http://path/to/biggest/image',
+        'potentialImages': [
+            'http://foo/bar',
+            'http://for/bar/baz'
+        ]
     }
 
 when fetching the URL doesn't cause errors. And when it does the response would be
