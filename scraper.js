@@ -76,8 +76,8 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   if (ogImageElement != undefined) {
     var ogImage = ogImageElement.attr('content').value();
-    callback(ogImage);
-    return;
+    biggestSize = Number.MAX_VALUE;
+    biggestImage = ogImage;
   }
   
   // if no open-graph image pick the biggest image
@@ -86,8 +86,8 @@ Scraper.prototype.getImage = function(dom, callback) {
   
   // no images? :(
   if (!count) {
-    // console.log('No images found for', this.url);
-    callback(biggestImage);
+    console.log('No images found for', this.url);
+    callback(biggestImage, potentialImages);
     return;
   }
   
