@@ -171,7 +171,9 @@ Scraper.prototype.hackUrl = function(url) {
 };
 
 Scraper.prototype.urbanTransformers = function(url) {
-  return url.replace('$cat$', '$zoom$');
+  var hackedUrl = url.replace('$cat$', '$zoom$');
+  hackedUrl = hackedUrl.replace('$detailthumb$', '$zoom$');
+  return hackedUrl;
 };
 
 Scraper.prototype.getData = function(callback) {
