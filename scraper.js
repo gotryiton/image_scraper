@@ -39,7 +39,7 @@ Scraper.prototype.getDom = function(string) {
 Scraper.prototype.getTitle = function(dom) {
   var title = null;
   var ogTitleElement = dom.get('//meta[@property="og:title"]');
-  if (ogTitleElement != undefined) {
+  if (typeof ogTitleElement !== "undefined") {
     title = ogTitleElement.attr('content').value();
   } else {
     // get meta data title or page title
@@ -47,7 +47,7 @@ Scraper.prototype.getTitle = function(dom) {
       title = dom.get('//meta[@name="title"]').attr('content').value();
     } catch (e) {
       titleElement = dom.get('//title');
-      if (titleElement != undefined) {
+      if (typeof titleElement !== "undefined") {
         title = titleElement.text();
       }
     }
@@ -59,11 +59,11 @@ Scraper.prototype.getTitle = function(dom) {
 Scraper.prototype.getDescription = function(dom) {
   var description = null;
   var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
-  if (ogDescriptionElement != undefined) {
+  if (typeof ogDescriptionElement !== "undefined") {
     description = ogDescriptionElement.attr('content').value();
   } else {
     var descriptionElement = dom.get('//meta[@name="description"]');
-    if (descriptionElement != undefined) {
+    if (typeof descriptionElement !== "undefined") {
       description = descriptionElement.attr('content').value();
     }
   }
@@ -78,7 +78,7 @@ Scraper.prototype.getImage = function(dom, callback) {
   // get open-graph image and return if you get it
   var ogImageElement = dom.get('//meta[@property="og:image"]');
   
-  if (ogImageElement != undefined) {
+  if (typeof ogImageElement !== "undefined") {
     var ogImage = ogImageElement.attr('content').value();
     biggestSize = Number.MAX_VALUE;
     biggestImage = ogImage;
@@ -144,13 +144,9 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
   };
   
   var host = u.parse(this.url).host;
-  if (this.getHosts[host] == undefined) {
-    options.method = 'HEAD';
-  } else {
-    options.method = 'GET';
-  }
+  options.method = this.getHosts[host] || 'HEAD';
   
-  console.log('Attempting to fetch Content-Lenght for', imageUrl);
+  console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
       if (error || response.statusCode != 200) {
@@ -170,10 +166,8 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
 
 Scraper.prototype.hackUrl = function(url) {
   var parsedUrl = u.parse(url);
-  if (this.rules[parsedUrl.host] == undefined) {
-    return url;
-  }
-  return this.rules[parsedUrl.host](url);
+  var rule = this.rules[parsedUrl.host];
+  return rule ? rule(url) : url;
 };
 
 Scraper.prototype.urbanTransformers = function(url) {

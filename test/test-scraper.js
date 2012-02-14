@@ -25,11 +25,3 @@ exports['og-image'] = function(test) {
     test.done();
   });
 };
-
-exports['abs-url'] = function(test) {
-  var sc = new sm.scraper('http://www.gotryiton.com/');
-  test.equal(sc.getAbsUrl('/foo/bar.baz'), 'http://www.gotryiton.com/foo/bar.baz');
-  var sc = new sm.scraper('http://www.gotryiton.com/GTIO');
-  test.equal(sc.getAbsUrl('//www.gotryiton.com/foo/bar.baz'), 'http://www.gotryiton.com/foo/bar.baz');
-  test.done();
-};
