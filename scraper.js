@@ -9,7 +9,7 @@ var Scraper = function(url) {
   this.rules = {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
-  this.minImageSize = 10240;
+  this.minImageSize = 10240/2;
   this.getHosts = {
     'm.shopbop.com': 'GET',
     'www.shopbop.com': 'GET'
