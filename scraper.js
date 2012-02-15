@@ -3,24 +3,55 @@ var request = require('request'),
     u = require("url");
 
 var Scraper = function(url) {
-  this.url = decodeURI(url);
-  this.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
-  this.headers = {'User-Agent': this.userAgent};
+  this.url = unescape(url);
   this.rules = {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
   this.minImageSize = 10240/2;
-  this.getHosts = {
+};
+
+Scraper.prototype.getRequestOptions = function(url) {
+  var mobileSafari = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
+  var safari = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.52.7 (KHTML, like Gecko) Version/5.1.2 Safari/534.52.7';
+  
+  // uses the host of the page URL and not the image URL
+  var host = u.parse(this.url).host;
+  
+  // rules
+  var requestAgentRules = {
+    'www.topshop.com': safari,
+    'www.saksfifthavenue.com': safari,
+    'us.asos.com': safari
+  };
+  var requestHostRules = {
     'm.shopbop.com': 'GET',
     'www.shopbop.com': 'GET'
   };
+  
+  // applying the rules
+  var headers = {
+    'User-Agent': requestAgentRules[host] || mobileSafari
+  };
+  var method = requestHostRules[host] || 'HEAD';
+  
+  // setting up the options
+  var options = {
+    url: url,
+    headers: headers,
+    method: method,
+    timeout: 5000
+  };
+  
+  return options;
 };
   
 Scraper.prototype.getBody = function(callback) {
+  var options = this.getRequestOptions(this.url);
+  options.method = 'GET';
   try {
-    request.get({url: this.url, headers: this.headers}, function (error, response, body) {
+    request(options, function (error, response, body)  {
       if (error || response.statusCode != 200) {
-      console.log('Could not fetch the URL', url, error);
+      console.log('Could not fetch the URL', options.url, error);
         callback(false);
       } else {
         callback(body);
@@ -130,21 +161,13 @@ Scraper.prototype.getImageUrls = function(dom) {
       continue;
     }
     
-    imageUrls.push(u.resolve(this.url, imageUrl));
+    imageUrls.push(u.resolve(this.url, unescape(imageUrl)));
   }
   return imageUrls;
 };
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
-  var imageUrl = this.hackUrl(imageUrl);
-  
-  var options = {
-    url: imageUrl,
-    headers: this.headers
-  };
-  
-  var host = u.parse(this.url).host;
-  options.method = this.getHosts[host] || 'HEAD';
+  var options = this.getRequestOptions(imageUrl);
   
   console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
