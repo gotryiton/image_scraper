@@ -211,7 +211,6 @@ Scraper.prototype.getData = function(callback) {
     var description = scraperObj.getDescription(dom);
     scraperObj.getImage(dom, function(image, alternateImages) {
       callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages});
-      console.log(body);
     });
   });
 };
