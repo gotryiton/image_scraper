@@ -3,7 +3,7 @@ var request = require('request'),
     u = require("url");
 
 var Scraper = function(url) {
-  this.url = decodeURI(url);
+  this.url = unescape(url);
   this.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
   this.headers = {'User-Agent': this.userAgent};
   this.rules = {
@@ -130,7 +130,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       continue;
     }
     
-    imageUrls.push(u.resolve(this.url, imageUrl));
+    imageUrls.push(u.resolve(this.url, unescape(imageUrl)));
   }
   return imageUrls;
 };
