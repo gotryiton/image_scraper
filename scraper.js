@@ -5,9 +5,11 @@ var request = require('request'),
 var Scraper = function(url) {
   this.url = unescape(url);
   this.minImageSize = 10240/2;
-  this.urlRules = {
-    'images.urbanoutfitters.com': this.urbanTransformers,
-    'www.jcrew.com': this.jcrewTransformers
+  this.imageUrlRules = {
+    'images.urbanoutfitters.com': this.urbanTransformers
+  };
+  this.pageUrlRules = {
+    // 'www.jcrew.com': this.jcrewTransformers
   };
 };
 
@@ -22,7 +24,8 @@ Scraper.prototype.getRequestOptions = function(url) {
   var requestAgentRules = {
     'www.topshop.com': safari,
     'www.saksfifthavenue.com': safari,
-    'us.asos.com': safari
+    'us.asos.com': safari,
+    'www.jcrew.com': safari
   };
   var requestHostRules = {
     'm.shopbop.com': 'GET',
@@ -34,11 +37,10 @@ Scraper.prototype.getRequestOptions = function(url) {
     'User-Agent': requestAgentRules[host] || mobileSafari
   };
   var method = requestHostRules[host] || 'HEAD';
-  var hackedUrl = this.hackUrl(host, url);
   
   // setting up the options
   var options = {
-    url: hackedUrl,
+    url: url,
     headers: headers,
     method: method,
     timeout: 5000
@@ -50,6 +52,7 @@ Scraper.prototype.getRequestOptions = function(url) {
 Scraper.prototype.getBody = function(callback) {
   var options = this.getRequestOptions(this.url);
   options.method = 'GET';
+  options.url = this.hackUrl(this.url, 'page');
   try {
     request(options, function (error, response, body)  {
       if (error || response.statusCode != 200) {
@@ -170,7 +173,7 @@ Scraper.prototype.getImageUrls = function(dom) {
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
-  
+  options.url = this.hackUrl(imageUrl, 'image');
   console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
@@ -189,8 +192,15 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
   }
 };
 
-Scraper.prototype.hackUrl = function(host, url) {
-  var rule = this.urlRules[host];
+Scraper.prototype.hackUrl = function(url, type) {
+  var rules;
+  if (type = 'page') {
+    rules = this.pageUrlRules;
+  } else if (tyhpe = 'image') {
+    rules = this.imageUrlRules;
+  }
+  var host = u.parse(this.url).host;
+  rule = rules[host];
   return rule ? rule(url) : url;
 };
 
