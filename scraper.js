@@ -4,10 +4,11 @@ var request = require('request'),
 
 var Scraper = function(url) {
   this.url = unescape(url);
-  this.rules = {
-    'images.urbanoutfitters.com': this.urbanTransformers
-  };
   this.minImageSize = 10240/2;
+  this.urlRules = {
+    'images.urbanoutfitters.com': this.urbanTransformers,
+    'www.jcrew.com': this.jcrewTransformers
+  };
 };
 
 Scraper.prototype.getRequestOptions = function(url) {
@@ -33,10 +34,11 @@ Scraper.prototype.getRequestOptions = function(url) {
     'User-Agent': requestAgentRules[host] || mobileSafari
   };
   var method = requestHostRules[host] || 'HEAD';
+  var hackedUrl = this.hackUrl(host, url);
   
   // setting up the options
   var options = {
-    url: url,
+    url: hackedUrl,
     headers: headers,
     method: method,
     timeout: 5000
@@ -187,15 +189,19 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
   }
 };
 
-Scraper.prototype.hackUrl = function(url) {
-  var parsedUrl = u.parse(url);
-  var rule = this.rules[parsedUrl.host];
+Scraper.prototype.hackUrl = function(host, url) {
+  var rule = this.urlRules[host];
   return rule ? rule(url) : url;
 };
 
 Scraper.prototype.urbanTransformers = function(url) {
   var hackedUrl = url.replace('$cat$', '$zoom$');
   hackedUrl = hackedUrl.replace('$detailthumb$', '$zoom$');
+  return hackedUrl;
+};
+
+Scraper.prototype.jcrewTransformers = function(url) {
+  var hackedUrl = url.replace('http://www.jcrew.com', 'http://m.jcrew.com/mt/www.jcrew.com');
   return hackedUrl;
 };
 
