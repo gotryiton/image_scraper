@@ -4,10 +4,13 @@ var request = require('request'),
 
 var Scraper = function(url) {
   this.url = unescape(url);
-  this.rules = {
+  this.minImageSize = 10240/2;
+  this.imageUrlRules = {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
-  this.minImageSize = 10240/2;
+  this.pageUrlRules = {
+    // 'www.jcrew.com': this.jcrewTransformers
+  };
 };
 
 Scraper.prototype.getRequestOptions = function(url) {
@@ -21,7 +24,8 @@ Scraper.prototype.getRequestOptions = function(url) {
   var requestAgentRules = {
     'www.topshop.com': safari,
     'www.saksfifthavenue.com': safari,
-    'us.asos.com': safari
+    'us.asos.com': safari,
+    'www.jcrew.com': safari
   };
   var requestHostRules = {
     'm.shopbop.com': 'GET',
@@ -48,6 +52,7 @@ Scraper.prototype.getRequestOptions = function(url) {
 Scraper.prototype.getBody = function(callback) {
   var options = this.getRequestOptions(this.url);
   options.method = 'GET';
+  options.url = this.hackUrl(this.url, 'page');
   try {
     request(options, function (error, response, body)  {
       if (error || response.statusCode != 200) {
@@ -168,7 +173,7 @@ Scraper.prototype.getImageUrls = function(dom) {
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
-  
+  options.url = this.hackUrl(imageUrl, 'image');
   console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
@@ -187,9 +192,15 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
   }
 };
 
-Scraper.prototype.hackUrl = function(url) {
-  var parsedUrl = u.parse(url);
-  var rule = this.rules[parsedUrl.host];
+Scraper.prototype.hackUrl = function(url, type) {
+  var rules;
+  if (type = 'page') {
+    rules = this.pageUrlRules;
+  } else if (tyhpe = 'image') {
+    rules = this.imageUrlRules;
+  }
+  var host = u.parse(this.url).host;
+  rule = rules[host];
   return rule ? rule(url) : url;
 };
 
