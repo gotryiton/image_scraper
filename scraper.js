@@ -210,11 +210,6 @@ Scraper.prototype.urbanTransformers = function(url) {
   return hackedUrl;
 };
 
-Scraper.prototype.jcrewTransformers = function(url) {
-  var hackedUrl = url.replace('http://www.jcrew.com', 'http://m.jcrew.com/mt/www.jcrew.com');
-  return hackedUrl;
-};
-
 Scraper.prototype.getData = function(callback) {
   var scraperObj = this;
   this.getBody(function(body) {
