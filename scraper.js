@@ -11,6 +11,10 @@ var Scraper = function(url) {
   this.pageUrlRules = {
     // 'www.jcrew.com': this.jcrewTransformers
   };
+  this.priceRules = {
+    // 'www.gotryiton.com': this.GoGoGo // (Counter-Strike anyone?)
+  };
+  this.dom = undefined;
 };
 
 Scraper.prototype.getRequestOptions = function(url) {
@@ -220,10 +224,32 @@ Scraper.prototype.getData = function(callback) {
     var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
+    var price = scraperObj.getPrice(body, dom);
     scraperObj.getImage(dom, function(image, alternateImages) {
-      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages});
+      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages, 'price': price});
     });
   });
+};
+
+Scraper.prototype.getPrice = function(string, dom) {
+  // uses the host of the page URL and not the image URL
+  var host = u.parse(this.url).host;
+  
+  var priceFunction = this.priceRules[host] || this.getPriceRegex;
+  return priceFunction(string, dom);
+};
+
+Scraper.prototype.getPriceRegex = function(string, dom) {
+  var regex = /\$\s*[\d,]+\.\d+/;
+  var match = string.match(regex);
+  if (match === null) {
+    return null;
+  }
+  var price = match[0];
+  price = price.replace(' ', '');
+  price = price.replace(',', '');
+  price = price.replace('$', '');
+  return price;
 };
 
 exports.scraper = Scraper;
