@@ -245,7 +245,11 @@ Scraper.prototype.getPriceRegex = function(string, dom) {
   if (match === null) {
     return null;
   }
-  return match[0];
+  var price = match[0];
+  price = price.replace(' ', '');
+  price = price.replace(',', '');
+  price = price.replace('$', '');
+  return price;
 };
 
 exports.scraper = Scraper;
