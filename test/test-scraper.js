@@ -25,3 +25,10 @@ exports['og-image'] = function(test) {
     test.done();
   });
 };
+
+exports['price'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  test.equal(sc.getPrice(metaPage), '1050.00'); // $1,050.00
+  test.equal(sc.getPrice(ogPage), '90.00');
+  test.done();
+};
