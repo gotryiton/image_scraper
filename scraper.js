@@ -9,12 +9,11 @@ var Scraper = function(url) {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
   this.pageUrlRules = {
-    // 'www.jcrew.com': this.jcrewTransformers
+    // 'm.asos.com': this.getAsosToUSFromUK
   };
   this.priceRules = {
     // 'www.gotryiton.com': this.GoGoGo // (Counter-Strike anyone?)
   };
-  this.dom = undefined;
 };
 
 Scraper.prototype.getRequestOptions = function(url) {
@@ -60,7 +59,7 @@ Scraper.prototype.getBody = function(callback) {
   try {
     request(options, function (error, response, body)  {
       if (error || response.statusCode != 200) {
-      console.log('Could not fetch the URL', options.url, error);
+        console.log('Could not fetch the URL', options.url, error);
         callback(false);
       } else {
         callback(body);
@@ -232,20 +231,33 @@ Scraper.prototype.getData = function(callback) {
 };
 
 Scraper.prototype.getPrice = function(string, dom) {
+  var scraperObj = this;
   // uses the host of the page URL and not the image URL
   var host = u.parse(this.url).host;
   
   var priceFunction = this.priceRules[host] || this.getPriceRegex;
-  return priceFunction(string, dom);
+  return priceFunction(scraperObj, string, dom);
 };
 
-Scraper.prototype.getPriceRegex = function(string, dom) {
-  var regex = /\$\s*[\d,]+\.\d+/;
-  var match = string.match(regex);
-  if (match === null) {
+Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
+  var pricesBlacklist = [0, 8.95];
+  var regex = /\$\s*[\d,]+\.\d+/g;
+  var matches = string.match(regex);
+  if (matches === null) {
     return null;
   }
-  var price = match[0];
+  // return first non-zero price
+  for (var i = 0; i < matches.length; i++) {
+    var price = matches[i];
+    var cleanPrice = scraperObj.intPrice(price);
+    if (pricesBlacklist.indexOf(cleanPrice) == -1) {
+      return cleanPrice;
+    }
+    return null;
+  }
+};
+
+Scraper.prototype.intPrice = function(price) {
   price = price.replace(' ', '');
   price = price.replace(',', '');
   price = price.replace('$', '');
