@@ -240,8 +240,12 @@ Scraper.prototype.getPrice = function(string, dom) {
 };
 
 Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
-  var pricesBlacklist = [0, 8.95];
-  var regex = /\$\s*[\d,]+\.\d+/g;
+  var specialRegexList = {
+    'www.zara.com': new RegExp(/[\d,]+\.\d+\s*USD/g)
+  };
+  // var pricesBlacklist = [0, 8.95];
+  var host = u.parse(scraperObj.url).host;
+  var regex = specialRegexList[host] || new RegExp(/\$\s*[\d,]+\.\d+/g);
   var matches = string.match(regex);
   if (matches === null) {
     return null;
@@ -250,7 +254,8 @@ Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
   for (var i = 0; i < matches.length; i++) {
     var price = matches[i];
     var cleanPrice = scraperObj.intPrice(price);
-    if (pricesBlacklist.indexOf(cleanPrice) == -1) {
+    // if (pricesBlacklist.indexOf(cleanPrice) == -1) {
+    if (cleanPrice > 0) {
       return cleanPrice;
     }
     return null;
@@ -261,6 +266,7 @@ Scraper.prototype.intPrice = function(price) {
   price = price.replace(' ', '');
   price = price.replace(',', '');
   price = price.replace('$', '');
+  price = price.replace('USD', '');
   return price;
 };
 
