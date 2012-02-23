@@ -169,7 +169,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       continue;
     }
     
-    imageUrls.push(u.resolve(this.url, unescape(imageUrl)));
+    imageUrls.push(u.resolve(this.url, imageUrl));
   }
   return imageUrls;
 };
