@@ -240,6 +240,7 @@ Scraper.prototype.getPrice = function(string, dom) {
 };
 
 Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
+  var excludedPrices = [0, 8.95];
   var regex = /\$\s*[\d,]+\.\d+/g;
   var matches = string.match(regex);
   if (matches === null) {
@@ -249,7 +250,7 @@ Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
   for (var i = 0; i < matches.length; i++) {
     var price = matches[i];
     var cleanPrice = scraperObj.intPrice(price);
-    if (cleanPrice > 0) {
+    if (excludedPrices.indexOf(cleanPrice) == -1) {
       return cleanPrice;
     }
     return null;
