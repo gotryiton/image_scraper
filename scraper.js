@@ -11,9 +11,6 @@ var Scraper = function(url) {
   this.pageUrlRules = {
     'm.asos.com': this.getAsosToUSFromUK
   };
-  this.priceRules = {
-    // 'www.gotryiton.com': this.GoGoGo // (Counter-Strike anyone?)
-  };
 };
 
 Scraper.prototype.getRequestOptions = function(url) {
@@ -223,29 +220,21 @@ Scraper.prototype.getData = function(callback) {
     var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
-    var price = scraperObj.getPrice(body, dom);
+    var price = scraperObj.getPrice(body);
     scraperObj.getImage(dom, function(image, alternateImages) {
       callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages, 'price': price});
     });
   });
 };
 
-Scraper.prototype.getPrice = function(string, dom) {
-  var scraperObj = this;
-  // uses the host of the page URL and not the image URL
-  var host = u.parse(this.url).host;
-  
-  var priceFunction = this.priceRules[host] || this.getPriceRegex;
-  return priceFunction(scraperObj, string, dom);
-};
-
-Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
+Scraper.prototype.getPrice = function(string) {
   var specialRegexList = {
-    'www.zara.com': new RegExp(/[\d,]+\.\d+\s*USD/g)
+    'www.zara.com': new RegExp(/[\d,]+\.\d+\s*USD/g), // looks for 1.2 USD
+    'm.sephora.com': new RegExp(/\>\s*\$\s*[\d,]+[\.\d]*/g) // doesn't look for decimal point and looks for a leading '>'
   };
   // var pricesBlacklist = [0, 8.95];
-  var host = u.parse(scraperObj.url).host;
-  var regex = specialRegexList[host] || new RegExp(/\$\s*[\d,]+\.\d+/g);
+  var host = u.parse(this.url).host;
+  var regex = specialRegexList[host] || new RegExp(/\$\s*[\d,]+\.\d+/g); // looks for $( )1.2
   var matches = string.match(regex);
   if (matches === null) {
     return null;
@@ -253,7 +242,7 @@ Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
   // return first non-zero price
   for (var i = 0; i < matches.length; i++) {
     var price = matches[i];
-    var cleanPrice = scraperObj.intPrice(price);
+    var cleanPrice = this.intPrice(price);
     // if (pricesBlacklist.indexOf(cleanPrice) == -1) {
     if (cleanPrice > 0) {
       return cleanPrice;
@@ -267,6 +256,7 @@ Scraper.prototype.intPrice = function(price) {
   price = price.replace(',', '');
   price = price.replace('$', '');
   price = price.replace('USD', '');
+  price = price.replace('>', '');
   return price;
 };
 
