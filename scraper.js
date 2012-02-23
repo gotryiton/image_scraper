@@ -243,7 +243,6 @@ Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
   var pricesBlacklist = [0, 8.95];
   var regex = /\$\s*[\d,]+\.\d+/g;
   var matches = string.match(regex);
-  console.log(matches);
   if (matches === null) {
     return null;
   }
