@@ -252,6 +252,7 @@ Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
     if (cleanPrice > 0) {
       return cleanPrice;
     }
+    return null;
   }
 };
 
