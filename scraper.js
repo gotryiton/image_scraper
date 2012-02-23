@@ -9,7 +9,7 @@ var Scraper = function(url) {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
   this.pageUrlRules = {
-    // 'm.asos.com': this.getAsosToUSFromUK
+    'm.asos.com': this.getAsosToUSFromUK
   };
   this.priceRules = {
     // 'www.gotryiton.com': this.GoGoGo // (Counter-Strike anyone?)
@@ -258,8 +258,8 @@ Scraper.prototype.getPriceRegex = function(scraperObj, string, dom) {
     if (cleanPrice > 0) {
       return cleanPrice;
     }
-    return null;
   }
+  return null;
 };
 
 Scraper.prototype.intPrice = function(price) {
@@ -268,6 +268,12 @@ Scraper.prototype.intPrice = function(price) {
   price = price.replace('$', '');
   price = price.replace('USD', '');
   return price;
+};
+
+Scraper.prototype.getAsosToUSFromUK = function(url) {
+  url = url.replace('http://m.asos.com/mt/www.asos.com/countryid/2/', 'http://m.asos.com/mt/www.asos.com/');
+  url = url.replace('http://m.asos.com/mt/www.asos.com/', 'http://m.asos.com/mt/www.asos.com/countryid/2/');
+  return url;
 };
 
 exports.scraper = Scraper;
