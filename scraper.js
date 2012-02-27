@@ -140,8 +140,9 @@ Scraper.prototype.getImage = function(dom, callback) {
         if (size > biggestSize) {
           biggestSize = size;
           biggestImage = url;
+        } else {
+          alternateImages.push(url);
         }
-        alternateImages.push(url);
       }
       if (!count) callback(biggestImage, alternateImages);
     });
