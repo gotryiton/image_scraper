@@ -226,6 +226,10 @@ Scraper.prototype.getData = function(callback) {
     var description = scraperObj.getDescription(dom);
     var price = scraperObj.getPrice(body);
     scraperObj.getImage(dom, function(image, alternateImages) {
+      if (title === null && image === null) {
+        callback({'status': 'error'});
+        return;
+      }
       callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages, 'price': price});
     });
   });
