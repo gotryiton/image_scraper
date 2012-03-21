@@ -56,7 +56,7 @@ Scraper.prototype.getBody = function(callback) {
   try {
     request(options, function (error, response, body)  {
       if (error || response.statusCode != 200) {
-        console.log('Could not fetch the URL', options.url, error);
+        console.log('Could not fetch the URL', options.url, 'with error', error, 'and response status code', response.statusCode);
         callback(false);
       } else {
         callback(body);
