@@ -238,7 +238,8 @@ Scraper.prototype.getData = function(callback) {
 Scraper.prototype.getPrice = function(string) {
   var specialRegexList = {
     'www.zara.com': new RegExp(/[\d,]+\.\d+\s*USD/g), // looks for 1.2 USD
-    'm.sephora.com': new RegExp(/\>\s*\$\s*[\d,]+[\.\d]*/g) // doesn't look for decimal point and looks for a leading '>'
+    'm.sephora.com': new RegExp(/\>\s*\$\s*[\d,]+[\.\d]*/g), // doesn't look for decimal point and looks for a leading '>'
+    'www.jcrew.com': new RegExp(/\$\s*[\d,]+\.\d+\</g) // looks for a ending '<'
   };
   // var pricesBlacklist = [0, 8.95];
   var host = u.parse(this.url).host;
@@ -260,11 +261,10 @@ Scraper.prototype.getPrice = function(string) {
 };
 
 Scraper.prototype.intPrice = function(price) {
-  price = price.replace(' ', '');
-  price = price.replace(',', '');
-  price = price.replace('$', '');
-  price = price.replace('USD', '');
-  price = price.replace('>', '');
+  var removeTheseChars = [' ', ',', '$', 'USD', '>', '<'];
+  for (index in removeTheseChars) {
+    price = price.replace(removeTheseChars[index], '');
+  }
   return price;
 };
 
