@@ -253,7 +253,6 @@ Scraper.prototype.getPrice = function(string) {
   var regex = specialRegexList[host] || new RegExp(/\$\s*[\d,]+\.\d+/g); // looks for $( )1.2
   var matches = string.match(regex);
   if (matches === null) {
-    console.log('No matches');
     return null;
   }
   // return first non-zero price
