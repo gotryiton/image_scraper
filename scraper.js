@@ -43,7 +43,8 @@ Scraper.prototype.getRequestOptions = function(url) {
     url: url,
     headers: headers,
     method: method,
-    timeout: 5000
+    timeout: 5000,
+    returnRedirectUri: true
   };
   
   return options;
@@ -53,12 +54,14 @@ Scraper.prototype.getBody = function(callback) {
   var options = this.getRequestOptions(this.url);
   options.method = 'GET';
   options.url = this.hackUrl(this.url, 'page');
+  var scraperObj = this;
   try {
-    request(options, function (error, response, body)  {
+    request(options, function (error, response, body, redirectUrl) {
       if (error || response.statusCode != 200) {
         console.log('Could not fetch the URL', options.url, 'with error', error, 'and response status code', response.statusCode);
         callback(false);
       } else {
+        scraperObj.url = redirectUrl;
         callback(body);
       }
     });
@@ -230,7 +233,7 @@ Scraper.prototype.getData = function(callback) {
         callback({'status': 'error'});
         return;
       }
-      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages, 'price': price});
+      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages, 'price': price, 'url': scraperObj.url});
     });
   });
 };
@@ -252,6 +255,7 @@ Scraper.prototype.getPrice = function(string) {
   var host = u.parse(this.url).host;
   var regex = specialRegexList[host] || new RegExp(/\$\s*[\d,]+\.\d+/g); // looks for $( )1.2
   var matches = string.match(regex);
+  console.log(matches);
   if (matches === null) {
     return null;
   }
