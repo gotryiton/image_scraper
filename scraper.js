@@ -56,12 +56,12 @@ Scraper.prototype.getBody = function(callback) {
   options.url = this.hackUrl(this.url, 'page');
   var scraperObj = this;
   try {
-    request(options, function (error, response, body, redirectUrl) {
+    var r = request(options, function (error, response, body) {
       if (error || response.statusCode != 200) {
         console.log('Could not fetch the URL', options.url, 'with error', error, 'and response status code', response.statusCode);
         callback(false);
       } else {
-        scraperObj.url = redirectUrl;
+        scraperObj.url = u.format(r.uri);
         callback(body);
       }
     });
