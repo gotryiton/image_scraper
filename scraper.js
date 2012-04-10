@@ -62,7 +62,6 @@ Scraper.prototype.getBody = function(callback) {
         callback(false);
       } else {
         scraperObj.url = u.format(r.uri);
-        console.log(scraperObj.url);
         callback(body);
       }
     });
