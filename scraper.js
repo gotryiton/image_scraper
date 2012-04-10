@@ -43,8 +43,7 @@ Scraper.prototype.getRequestOptions = function(url) {
     url: url,
     headers: headers,
     method: method,
-    timeout: 5000,
-    returnRedirectUri: true
+    timeout: 5000
   };
   
   return options;
