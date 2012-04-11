@@ -56,11 +56,11 @@ Scraper.prototype.getBody = function(callback) {
   var scraperObj = this;
   try {
     var r = request(options, function (error, response, body) {
+      scraperObj.url = u.format(r.uri);
       if (error || response.statusCode != 200) {
         console.log('Could not fetch the URL', options.url, 'with error', error, 'and response status code', response.statusCode);
         callback(false);
       } else {
-        scraperObj.url = u.format(r.uri);
         callback(body);
       }
     });
