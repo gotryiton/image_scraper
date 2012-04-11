@@ -58,7 +58,11 @@ Scraper.prototype.getBody = function(callback) {
     var r = request(options, function (error, response, body) {
       scraperObj.url = u.format(r.uri);
       if (error || response.statusCode != 200) {
-        console.log('Could not fetch the URL', options.url, 'with error', error, 'and response status code', response.statusCode);
+        if (typeof response == "undefined") {
+          console.log('Error', error, 'fetching the URL', options.url);
+        } else {
+          console.log('Status code returned', response.statusCode, 'for URL', options.url);
+        }
         callback(false);
       } else {
         callback(body);
