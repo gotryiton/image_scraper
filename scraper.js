@@ -53,8 +53,10 @@ Scraper.prototype.getBody = function(callback) {
   var options = this.getRequestOptions(this.url);
   options.method = 'GET';
   options.url = this.hackUrl(this.url, 'page');
+  var scraperObj = this;
   try {
-    request(options, function (error, response, body)  {
+    var r = request(options, function (error, response, body) {
+      scraperObj.url = u.format(r.uri);
       if (error || response.statusCode != 200) {
         if (typeof response == "undefined") {
           console.log('Error', error, 'fetching the URL', options.url);
@@ -234,17 +236,25 @@ Scraper.prototype.getData = function(callback) {
         callback({'status': 'error'});
         return;
       }
-      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages, 'price': price});
+      callback({'status': 'ok', 'title': title, 'description': description, 'image': image, 'alternateImages': alternateImages, 'price': price, 'url': scraperObj.url});
     });
   });
 };
 
 Scraper.prototype.getPrice = function(string) {
+  var trailingAngleBracketRegExp = new RegExp(/\$\s*[\d,]+\.\d+\</g); // looks for a ending '<'
+  var sephoraRegExp = new RegExp(/\>\s*\$\s*[\d,]+[\.\d]*/g); // doesn't look for decimal point and looks for a leading '>'
+
   var specialRegexList = {
     'www.zara.com': new RegExp(/[\d,]+\.\d+\s*USD/g), // looks for 1.2 USD
-    'm.sephora.com': new RegExp(/\>\s*\$\s*[\d,]+[\.\d]*/g) // doesn't look for decimal point and looks for a leading '>'
+    'www.jcrew.com': trailingAngleBracketRegExp,
+    'www.singer22.com': trailingAngleBracketRegExp,
+    'store.americanapparel.net': trailingAngleBracketRegExp,
+    'm.sephora.com': sephoraRegExp,
+    'www.sephora.com': sephoraRegExp,
+    'sephora.com': sephoraRegExp
   };
-  // var pricesBlacklist = [0, 8.95];
+
   var host = u.parse(this.url).host;
   var regex = specialRegexList[host] || new RegExp(/\$\s*[\d,]+\.\d+/g); // looks for $( )1.2
   var matches = string.match(regex);
@@ -264,11 +274,10 @@ Scraper.prototype.getPrice = function(string) {
 };
 
 Scraper.prototype.intPrice = function(price) {
-  price = price.replace(' ', '');
-  price = price.replace(',', '');
-  price = price.replace('$', '');
-  price = price.replace('USD', '');
-  price = price.replace('>', '');
+  var removeTheseChars = [' ', ',', '$', 'USD', '>', '<'];
+  for (index in removeTheseChars) {
+    price = price.replace(removeTheseChars[index], '');
+  }
   return price;
 };
 
