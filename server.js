@@ -12,4 +12,9 @@ server.post('/scraper', function(req, res) {
   });
 });
 
+server.get('/status', function(req, res) {
+  var response = {'status': 'ok'};
+  res.send(200, response);
+});
+
 module.exports = server;
