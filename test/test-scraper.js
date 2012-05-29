@@ -45,7 +45,8 @@ exports['non-existant-url'] = function(test) {
 exports['no-pin'] = function(test) {
   var sc = new sm.scraper('http://www.gotryiton.com/');
   test.equal(sc.getTitle(sc.getDom(noPinPage)), 'adidas CLIMACOOL Ride Shoes');
-  test.equal(sc.getDescription(sc.getDom(noPinPage)), null);
+  test.equal(sc.getDescription(sc.getDom(noPinPage)), 'Light, durable and made to keep your feet fresh when you run. These adidas CC Ride running shoes have a lightweight mesh upper, allover CLIMACOOL® ventilation, adiPRENE®+ in the forefoot for more efficient propulsion and adiPRENE® under the heel for cushioning.');
+  test.equal(sc.getPrice(noPinPage), null);
   sc.getImage(sc.getDom(noPinPage), function(image){
     test.equal(image, null);
     test.done();

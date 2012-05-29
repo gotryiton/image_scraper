@@ -108,10 +108,6 @@ Scraper.prototype.getTitle = function(dom) {
 Scraper.prototype.getDescription = function(dom) {
   var description = null;
 
-  if (this.noPin) {
-    return description;
-  }
-
   var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
   if (typeof ogDescriptionElement !== "undefined") {
     description = ogDescriptionElement.attr('content').value();
@@ -260,6 +256,10 @@ Scraper.prototype.getData = function(callback) {
 };
 
 Scraper.prototype.getPrice = function(string) {
+  if (this.noPin) {
+    return null;
+  }
+  
   var specialRegexList = {
     'www.zara.com': new RegExp(/[\d,]+\.\d+\s*USD/g), // looks for 1.2 USD
     'm.sephora.com': new RegExp(/\>\s*\$\s*[\d,]+[\.\d]*/g) // doesn't look for decimal point and looks for a leading '>'
