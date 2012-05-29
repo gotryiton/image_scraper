@@ -4,6 +4,7 @@ var request = require('request'),
 
 var Scraper = function(url) {
   this.url = unescape(url);
+  this.noPin = false;
   this.minImageSize = 10240/2;
   this.imageUrlRules = {
     'images.urbanoutfitters.com': this.urbanTransformers
@@ -73,7 +74,15 @@ Scraper.prototype.getBody = function(callback) {
 };
 
 Scraper.prototype.getDom = function(string) {
-  return libxmljs.parseHtmlString(string);
+  var dom = libxmljs.parseHtmlString(string);
+  try {
+    var pinterest = dom.get('//meta[@name="pinterest"]').attr('content').value();
+    if (pinterest == "nopin") {
+      this.noPin = true;
+    }
+  } catch (e) {}
+
+  return dom;
 };
 
 Scraper.prototype.getTitle = function(dom) {
@@ -98,6 +107,11 @@ Scraper.prototype.getTitle = function(dom) {
 
 Scraper.prototype.getDescription = function(dom) {
   var description = null;
+
+  if (this.noPin) {
+    return description;
+  }
+
   var ogDescriptionElement = dom.get('//meta[@property="og:description"]');
   if (typeof ogDescriptionElement !== "undefined") {
     description = ogDescriptionElement.attr('content').value();
@@ -114,6 +128,12 @@ Scraper.prototype.getImage = function(dom, callback) {
   var biggestSize = this.minImageSize;
   var biggestImage = null;
   var alternateImages = [];
+
+  if (this.noPin) {
+    console.log('No pinning here', this.url);
+    callback(biggestImage, alternateImages);
+    return;
+  }
   
   // get open-graph image and return if you get it
   var ogImageElement = dom.get('//meta[@property="og:image"]');
