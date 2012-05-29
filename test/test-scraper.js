@@ -32,3 +32,11 @@ exports['price'] = function(test) {
   test.equal(sc.getPrice(ogPage), '90.00');
   test.done();
 };
+
+exports['non-existant-url'] = function(test) {
+  var sc = new sm.scraper('http://www.afasfa6f54g35a4tr65w4t365654645546we54y65dg4hw6e546ds54g6s5wr3e36363#%^@#sfasfasgasf.com/');
+  sc.getData(function(data) {
+    test.equal(data.status, "error");
+    test.done();
+  });
+};
