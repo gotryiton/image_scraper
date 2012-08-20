@@ -26,7 +26,8 @@ Scraper.prototype.getRequestOptions = function(url) {
     'www.topshop.com': safari,
     'www.saksfifthavenue.com': safari,
     'us.asos.com': safari,
-    'www.jcrew.com': safari
+    'www.jcrew.com': safari,
+    'www.shopbop.com': safari
   };
   var requestHostRules = {
     'm.shopbop.com': 'GET',
@@ -174,19 +175,26 @@ Scraper.prototype.getImage = function(dom, callback) {
 
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
+  var imageUrl = '';
+  if (u.parse(this.url).host == 'www.shopbop.com') {
+    try {
+      imageUrl = dom.get('//div[@id="productZoomImage"]').attr('href').value();
+      imageUrls.push(u.resolve(this.url, imageUrl));
+    } catch(e) {}
+  }
   var imageElements = dom.find('//img');
   var count = imageElements.length;
   for (var i = 0; i < count; i++) {
     try {
       // some people have an img tag with no src attribute - welcome to the internet
-      var imageUrl = imageElements[i].attr('src').value();
+      imageUrl = imageElements[i].attr('src').value();
     } catch(e) {
       // console.log('Skipping element ' + imageElements[i] + ' because there was error'); //, e);
       continue;
     }
     
     // ignoring GIFs, they sometimes are big and they almost never are product images
-    if (imageUrl == '' || imageUrl.substr(-4) == '.gif') {
+    if (imageUrl === '' || imageUrl.substr(-4) == '.gif') {
       continue;
     }
     
@@ -198,6 +206,7 @@ Scraper.prototype.getImageUrls = function(dom) {
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
   options.url = this.hackUrl(imageUrl, 'image');
+  console.log(this.url);
   console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
@@ -218,9 +227,9 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
 
 Scraper.prototype.hackUrl = function(url, type) {
   var rules;
-  if (type = 'page') {
+  if (type == 'page') {
     rules = this.pageUrlRules;
-  } else if (tyhpe = 'image') {
+  } else if (type == 'image') {
     rules = this.imageUrlRules;
   }
   var host = u.parse(this.url).host;
