@@ -17,10 +17,10 @@ var Scraper = function(url) {
 Scraper.prototype.getRequestOptions = function(url) {
   var mobileSafari = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
   var safari = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.52.7 (KHTML, like Gecko) Version/5.1.2 Safari/534.52.7';
-  
+
   // uses the host of the page URL and not the image URL
   var host = u.parse(this.url).host;
-  
+
   // rules
   var requestAgentRules = {
     'www.topshop.com': safari,
@@ -33,13 +33,13 @@ Scraper.prototype.getRequestOptions = function(url) {
     'm.shopbop.com': 'GET',
     'www.shopbop.com': 'GET'
   };
-  
+
   // applying the rules
   var headers = {
     'User-Agent': requestAgentRules[host] || mobileSafari
   };
   var method = requestHostRules[host] || 'HEAD';
-  
+
   // setting up the options
   var options = {
     url: url,
@@ -47,10 +47,10 @@ Scraper.prototype.getRequestOptions = function(url) {
     method: method,
     timeout: 5000
   };
-  
+
   return options;
 };
-  
+
 Scraper.prototype.getBody = function(callback) {
   var options = this.getRequestOptions(this.url);
   options.method = 'GET';
@@ -131,29 +131,39 @@ Scraper.prototype.getImage = function(dom, callback) {
     callback(biggestImage, alternateImages);
     return;
   }
-  
+
   // get open-graph image and return if you get it
   var ogImageElement = dom.get('//meta[@property="og:image"]');
-  
+
   if (typeof ogImageElement !== "undefined") {
     var ogImage = ogImageElement.attr('content').value();
+
+    if (u.parse(this.url).host == 'us.asos.com') {
+      var replace_name = '/image1xl.jpg';
+      var replacement_name = '/image1xxl.jpg';
+      if (ogImage.slice(-replace_name.length) == replace_name) {
+        alternateImages.push(ogImage);
+        ogImage = ogImage.slice(0, -replace_name.length) + replacement_name;
+      }
+    }
+
     biggestSize = Number.MAX_VALUE;
     biggestImage = ogImage;
   }
-  
+
   // if no open-graph image pick the biggest image
   var images = this.getImageUrls(dom);
   var count = images.length;
-  
+
   // no images? :(
   if (!count) {
     console.log('No images found for', this.url);
     callback(biggestImage, alternateImages);
     return;
   }
-  
+
   var scraperObj = this;
-  
+
   images.forEach(function(image) {
     scraperObj.getImageSize(image, function(url, size) {
       count--;
@@ -176,14 +186,17 @@ Scraper.prototype.getImage = function(dom, callback) {
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageUrl = '';
+
   if (u.parse(this.url).host == 'www.shopbop.com') {
     try {
       imageUrl = dom.get('//div[@id="productZoomImage"]').attr('href').value();
       imageUrls.push(u.resolve(this.url, imageUrl));
     } catch(e) {}
   }
+
   var imageElements = dom.find('//img');
   var count = imageElements.length;
+
   for (var i = 0; i < count; i++) {
     try {
       // some people have an img tag with no src attribute - welcome to the internet
@@ -192,12 +205,12 @@ Scraper.prototype.getImageUrls = function(dom) {
       // console.log('Skipping element ' + imageElements[i] + ' because there was error'); //, e);
       continue;
     }
-    
+
     // ignoring GIFs, they sometimes are big and they almost never are product images
     if (imageUrl === '' || imageUrl.substr(-4) == '.gif') {
       continue;
     }
-    
+
     imageUrls.push(u.resolve(this.url, imageUrl));
   }
   return imageUrls;
@@ -268,7 +281,7 @@ Scraper.prototype.getPrice = function(string) {
   if (this.noPin) {
     return null;
   }
-  
+
   var specialRegexList = {
     'www.zara.com': new RegExp(/[\d,]+\.\d+\s*USD/g), // looks for 1.2 USD
     'm.sephora.com': new RegExp(/\>\s*\$\s*[\d,]+[\.\d]*/g) // doesn't look for decimal point and looks for a leading '>'
