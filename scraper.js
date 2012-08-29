@@ -141,7 +141,6 @@ Scraper.prototype.getImage = function(dom, callback) {
     if (u.parse(this.url).host == 'us.asos.com') {
       var replace_name = '/image1xl.jpg';
       var replacement_name = '/image1xxl.jpg';
-      console.log(ogImage.slice(-replace_name.length));
       if (ogImage.slice(-replace_name.length) == replace_name) {
         alternateImages.push(ogImage);
         ogImage = ogImage.slice(0, -replace_name.length) + replacement_name;
