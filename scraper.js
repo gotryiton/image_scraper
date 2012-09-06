@@ -132,25 +132,6 @@ Scraper.prototype.getImage = function(dom, callback) {
     return;
   }
 
-  // get open-graph image and return if you get it
-  var ogImageElement = dom.get('//meta[@property="og:image"]');
-
-  if (typeof ogImageElement !== "undefined") {
-    var ogImage = ogImageElement.attr('content').value();
-
-    if (u.parse(this.url).host == 'us.asos.com') {
-      var replace_name = '/image1xl.jpg';
-      var replacement_name = '/image1xxl.jpg';
-      if (ogImage.slice(-replace_name.length) == replace_name) {
-        alternateImages.push(ogImage);
-        ogImage = ogImage.slice(0, -replace_name.length) + replacement_name;
-      }
-    }
-
-    biggestSize = Number.MAX_VALUE;
-    biggestImage = ogImage;
-  }
-
   // if no open-graph image pick the biggest image
   var images = this.getImageUrls(dom);
   var count = images.length;
@@ -170,22 +151,51 @@ Scraper.prototype.getImage = function(dom, callback) {
       if (size > scraperObj.minImageSize) {
         if (size > biggestSize) {
           if (biggestImage !== null) {
-            alternateImages.push(biggestImage);
+            alternateImages.push({url: biggestImage, size: biggestSize});
           }
           biggestSize = size;
           biggestImage = url;
         } else {
-          alternateImages.push(url);
+          alternateImages.push({url: url, size: size});
         }
       }
-      if (!count) callback(biggestImage, alternateImages);
+      if (!count) callback(biggestImage, scraperObj.alternateImageUrls(alternateImages));
     });
   });
+};
+
+Scraper.prototype.alternateImageUrls = function(alternateImages) {
+  alternateImages.sort(function(a, b) {
+    return a.size > b.size ? (a.size == b.size ? 0 : -1) : 1;
+  });
+  var imageUrls = [];
+
+  var count = alternateImages.length;
+  for(var i = 0; i < count; i++) {
+    imageUrls.push(alternateImages[i].url);
+  }
+  return imageUrls;
 };
 
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageUrl = '';
+
+  var ogImageElement = dom.get('//meta[@property="og:image"]');
+
+  if (typeof ogImageElement !== "undefined") {
+    var ogImage = ogImageElement.attr('content').value();
+
+    if (u.parse(this.url).host == 'us.asos.com') {
+      var replace_name = '/image1xl.jpg';
+      var replacement_name = '/image1xxl.jpg';
+      if (ogImage.slice(-replace_name.length) == replace_name) {
+        ogImage = ogImage.slice(0, -replace_name.length) + replacement_name;
+      }
+    }
+
+    imageUrls.push(ogImage);
+  }
 
   var host = u.parse(this.url).host;
   if (host == 'www.shopbop.com') {
@@ -193,7 +203,7 @@ Scraper.prototype.getImageUrls = function(dom) {
       imageUrl = dom.get('//div[@id="productZoomImage"]').attr('href').value();
       imageUrls.push(u.resolve(this.url, imageUrl));
     } catch(e) {}
-  } else if (host == 'www.zara.com') {
+  } else if (host != 'www.zara.com') {
     try {
       imageUrl = dom.get('//input[@class="pAuxMZoom"]').attr('value').value();
       imageUrls.push(u.resolve(this.url, imageUrl));
@@ -203,7 +213,7 @@ Scraper.prototype.getImageUrls = function(dom) {
   var imageElements = dom.find('//img');
   var count = imageElements.length;
 
-  for (var i = 0; i < count; i++) {
+  for(var i = 0; i < count; i++) {
     try {
       // some people have an img tag with no src attribute - welcome to the internet
       imageUrl = imageElements[i].attr('src').value();
@@ -219,7 +229,12 @@ Scraper.prototype.getImageUrls = function(dom) {
 
     imageUrls.push(u.resolve(this.url, imageUrl));
   }
-  return imageUrls;
+
+  var urlRegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/gi; // http://regexlib.com/REDetails.aspx?regexp_id=90
+  var allUrls = this.body.match(urlRegExp);
+
+  var mixedUrls = imageUrls.concat(allUrls);
+  return mixedUrls;
 };
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
@@ -269,6 +284,7 @@ Scraper.prototype.getData = function(callback) {
       callback({'status': 'error'});
       return;
     }
+    scraperObj.body = body;
     var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
@@ -300,7 +316,7 @@ Scraper.prototype.getPrice = function(string) {
     return null;
   }
   // return first non-zero price
-  for (var i = 0; i < matches.length; i++) {
+  for(var i = 0; i < matches.length; i++) {
     var price = matches[i];
     var cleanPrice = this.intPrice(price);
     // if (pricesBlacklist.indexOf(cleanPrice) == -1) {
