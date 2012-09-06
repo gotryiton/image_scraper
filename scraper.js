@@ -27,7 +27,8 @@ Scraper.prototype.getRequestOptions = function(url) {
     'www.saksfifthavenue.com': safari,
     'us.asos.com': safari,
     'www.jcrew.com': safari,
-    'www.shopbop.com': safari
+    'www.shopbop.com': safari,
+    'www.chictweak.com': safari
   };
   var requestHostRules = {
     'm.shopbop.com': 'GET',
@@ -45,7 +46,7 @@ Scraper.prototype.getRequestOptions = function(url) {
     url: url,
     headers: headers,
     method: method,
-    timeout: 5000
+    timeout: 2000
   };
 
   return options;
@@ -132,25 +133,6 @@ Scraper.prototype.getImage = function(dom, callback) {
     return;
   }
 
-  // get open-graph image and return if you get it
-  var ogImageElement = dom.get('//meta[@property="og:image"]');
-
-  if (typeof ogImageElement !== "undefined") {
-    var ogImage = ogImageElement.attr('content').value();
-
-    if (u.parse(this.url).host == 'us.asos.com') {
-      var replace_name = '/image1xl.jpg';
-      var replacement_name = '/image1xxl.jpg';
-      if (ogImage.slice(-replace_name.length) == replace_name) {
-        alternateImages.push(ogImage);
-        ogImage = ogImage.slice(0, -replace_name.length) + replacement_name;
-      }
-    }
-
-    biggestSize = Number.MAX_VALUE;
-    biggestImage = ogImage;
-  }
-
   // if no open-graph image pick the biggest image
   var images = this.getImageUrls(dom);
   var count = images.length;
@@ -170,34 +152,56 @@ Scraper.prototype.getImage = function(dom, callback) {
       if (size > scraperObj.minImageSize) {
         if (size > biggestSize) {
           if (biggestImage !== null) {
-            alternateImages.push(biggestImage);
+            alternateImages.push({url: biggestImage, size: biggestSize});
           }
           biggestSize = size;
           biggestImage = url;
         } else {
-          alternateImages.push(url);
+          alternateImages.push({url: url, size: size});
         }
       }
-      if (!count) callback(biggestImage, alternateImages);
+      if (!count) callback(biggestImage, scraperObj.alternateImageUrls(alternateImages));
     });
   });
+};
+
+Scraper.prototype.alternateImageUrls = function(alternateImages) {
+  alternateImages.sort(function(a, b) {
+    return a.size > b.size ? (a.size == b.size ? 0 : -1) : 1;
+  });
+  var imageUrls = [];
+
+  var count = alternateImages.length;
+  for(var i = 0; i < count; i++) {
+    imageUrls.push(alternateImages[i].url);
+  }
+  return imageUrls;
 };
 
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageUrl = '';
 
-  if (u.parse(this.url).host == 'www.shopbop.com') {
-    try {
-      imageUrl = dom.get('//div[@id="productZoomImage"]').attr('href').value();
-      imageUrls.push(u.resolve(this.url, imageUrl));
-    } catch(e) {}
+  var ogImageElement = dom.get('//meta[@property="og:image"]');
+
+  if (typeof ogImageElement !== "undefined") {
+    var ogImage = ogImageElement.attr('content').value();
+
+    if (u.parse(this.url).host == 'us.asos.com') {
+      var replace_name = '/image1xl.jpg';
+      var replacement_name = '/image1xxl.jpg';
+      if (ogImage.slice(-replace_name.length) == replace_name) {
+        ogImage = ogImage.slice(0, -replace_name.length) + replacement_name;
+      }
+    }
+
+    imageUrls.push(ogImage);
   }
 
   var imageElements = dom.find('//img');
   var count = imageElements.length;
 
-  for (var i = 0; i < count; i++) {
+  for(var i = 0; i < count; i++) {
     try {
       // some people have an img tag with no src attribute - welcome to the internet
       imageUrl = imageElements[i].attr('src').value();
@@ -213,19 +217,39 @@ Scraper.prototype.getImageUrls = function(dom) {
 
     imageUrls.push(u.resolve(this.url, imageUrl));
   }
-  return imageUrls;
+
+  var hrefElements = dom.find('//*[@href]');
+  count = hrefElements.length;
+
+  for(i = 0; i < count; i++) {
+    imageUrl = hrefElements[i].attr('href').value();
+    if (imageUrl === '') {
+      continue;
+    }
+    imageUrls.push(u.resolve(this.url, imageUrl));
+  }
+
+  var urlRegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/gi; // http://regexlib.com/REDetails.aspx?regexp_id=90
+  var allUrls = this.body.match(urlRegExp);
+
+  var mixedUrls = imageUrls.concat(allUrls);
+
+  return mixedUrls;
 };
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
   options.url = this.hackUrl(imageUrl, 'image');
-  console.log(this.url);
   console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
       if (error || response.statusCode != 200) {
         callback(imageUrl, -1);
         console.log('Error requesting', imageUrl);
+        return;
+      }
+      if (typeof response.headers['content-type'] !== 'undefined' && response.headers['content-type'].substr(0, 5) != 'image') {
+        callback(imageUrl, -1);
         return;
       }
       var range = response.headers['content-length'];
@@ -263,6 +287,7 @@ Scraper.prototype.getData = function(callback) {
       callback({'status': 'error'});
       return;
     }
+    scraperObj.body = body;
     var dom = scraperObj.getDom(body);
     var title = scraperObj.getTitle(dom);
     var description = scraperObj.getDescription(dom);
@@ -294,7 +319,7 @@ Scraper.prototype.getPrice = function(string) {
     return null;
   }
   // return first non-zero price
-  for (var i = 0; i < matches.length; i++) {
+  for(var i = 0; i < matches.length; i++) {
     var price = matches[i];
     var cleanPrice = this.intPrice(price);
     // if (pricesBlacklist.indexOf(cleanPrice) == -1) {
