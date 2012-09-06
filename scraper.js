@@ -45,7 +45,7 @@ Scraper.prototype.getRequestOptions = function(url) {
     url: url,
     headers: headers,
     method: method,
-    timeout: 5000
+    timeout: 2000
   };
 
   return options;
@@ -197,19 +197,6 @@ Scraper.prototype.getImageUrls = function(dom) {
     imageUrls.push(ogImage);
   }
 
-  var host = u.parse(this.url).host;
-  if (host == 'www.shopbop.com') {
-    try {
-      imageUrl = dom.get('//div[@id="productZoomImage"]').attr('href').value();
-      imageUrls.push(u.resolve(this.url, imageUrl));
-    } catch(e) {}
-  } else if (host != 'www.zara.com') {
-    try {
-      imageUrl = dom.get('//input[@class="pAuxMZoom"]').attr('value').value();
-      imageUrls.push(u.resolve(this.url, imageUrl));
-    } catch(e) {}
-  }
-
   var imageElements = dom.find('//img');
   var count = imageElements.length;
 
@@ -240,13 +227,16 @@ Scraper.prototype.getImageUrls = function(dom) {
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
   options.url = this.hackUrl(imageUrl, 'image');
-  console.log(this.url);
-  console.log('Attempting to fetch Content-Length for', imageUrl);
+  // console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
       if (error || response.statusCode != 200) {
         callback(imageUrl, -1);
         console.log('Error requesting', imageUrl);
+        return;
+      }
+      if (typeof response.headers['content-type'] !== 'undefined' && response.headers['content-type'].substr(0, 5) != 'image') {
+        callback(imageUrl, -1);
         return;
       }
       var range = response.headers['content-length'];
