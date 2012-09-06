@@ -187,9 +187,15 @@ Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageUrl = '';
 
-  if (u.parse(this.url).host == 'www.shopbop.com') {
+  var host = u.parse(this.url).host;
+  if (host == 'www.shopbop.com') {
     try {
       imageUrl = dom.get('//div[@id="productZoomImage"]').attr('href').value();
+      imageUrls.push(u.resolve(this.url, imageUrl));
+    } catch(e) {}
+  } else if (host == 'www.zara.com') {
+    try {
+      imageUrl = dom.get('//input[@class="pAuxMZoom"]').attr('value').value();
       imageUrls.push(u.resolve(this.url, imageUrl));
     } catch(e) {}
   }
