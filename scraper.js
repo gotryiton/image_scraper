@@ -27,7 +27,8 @@ Scraper.prototype.getRequestOptions = function(url) {
     'www.saksfifthavenue.com': safari,
     'us.asos.com': safari,
     'www.jcrew.com': safari,
-    'www.shopbop.com': safari
+    'www.shopbop.com': safari,
+    'www.chictweak.com': safari
   };
   var requestHostRules = {
     'm.shopbop.com': 'GET',
@@ -217,17 +218,29 @@ Scraper.prototype.getImageUrls = function(dom) {
     imageUrls.push(u.resolve(this.url, imageUrl));
   }
 
+  var hrefElements = dom.find('//*[@href]');
+  count = hrefElements.length;
+
+  for(i = 0; i < count; i++) {
+    imageUrl = hrefElements[i].attr('href').value();
+    if (imageUrl === '') {
+      continue;
+    }
+    imageUrls.push(u.resolve(this.url, imageUrl));
+  }
+
   var urlRegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/gi; // http://regexlib.com/REDetails.aspx?regexp_id=90
   var allUrls = this.body.match(urlRegExp);
 
   var mixedUrls = imageUrls.concat(allUrls);
+
   return mixedUrls;
 };
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
   options.url = this.hackUrl(imageUrl, 'image');
-  // console.log('Attempting to fetch Content-Length for', imageUrl);
+  console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
       if (error || response.statusCode != 200) {
