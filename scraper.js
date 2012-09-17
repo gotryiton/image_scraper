@@ -28,7 +28,8 @@ Scraper.prototype.getRequestOptions = function(url) {
     'us.asos.com': safari,
     'www.jcrew.com': safari,
     'www.shopbop.com': safari,
-    'www.chictweak.com': safari
+    'www.chictweak.com': safari,
+    'www.forever21.com': safari
   };
   var requestHostRules = {
     'm.shopbop.com': 'GET',
@@ -229,7 +230,7 @@ Scraper.prototype.getImageUrls = function(dom) {
     imageUrls.push(u.resolve(this.url, imageUrl));
   }
 
-  var urlRegExp = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/gi; // http://regexlib.com/REDetails.aspx?regexp_id=90
+  var urlRegExp = /(http|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?/gi; // http://regexlib.com/REDetails.aspx?regexp_id=90
   var allUrls = this.body.match(urlRegExp);
 
   var mixedUrls = imageUrls.concat(allUrls);
@@ -240,6 +241,11 @@ Scraper.prototype.getImageUrls = function(dom) {
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
   options.url = this.hackUrl(imageUrl, 'image');
+  var host = u.parse(options.url).host;
+  if (typeof host === 'undefined') {
+    callback(imageUrl, -1);
+    return;
+  }
   console.log('Attempting to fetch Content-Length for', imageUrl);
   try {
     request(options, function (error, response, body) {
