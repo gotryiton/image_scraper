@@ -17,6 +17,7 @@ var Scraper = function(url) {
 Scraper.prototype.getRequestOptions = function(url) {
   var mobileSafari = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
   var safari = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.52.7 (KHTML, like Gecko) Version/5.1.2 Safari/534.52.7';
+  var curl = 'curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8r zlib/1.2.5';
 
   // uses the host of the page URL and not the image URL
   var host = u.parse(this.url).host;
@@ -29,7 +30,8 @@ Scraper.prototype.getRequestOptions = function(url) {
     'www.jcrew.com': safari,
     'www.shopbop.com': safari,
     'www.chictweak.com': safari,
-    'www.forever21.com': safari
+    'www.forever21.com': safari,
+    'www.net-a-porter.com': safari
   };
   var requestHostRules = {
     'm.shopbop.com': 'GET',
