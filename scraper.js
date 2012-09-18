@@ -181,6 +181,13 @@ Scraper.prototype.alternateImageUrls = function(alternateImages) {
   return imageUrls;
 };
 
+Scraper.prototype.replaceInString = function(replace_name, replacement_name, string) {
+  if (string.slice(-replace_name.length) == replace_name) {
+    string = string.slice(0, -replace_name.length) + replacement_name;
+  }
+  return string;
+};
+
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageUrl = '';
@@ -191,11 +198,8 @@ Scraper.prototype.getImageUrls = function(dom) {
     var ogImage = ogImageElement.attr('content').value();
 
     if (u.parse(this.url).host == 'us.asos.com') {
-      var replace_name = '/image1xl.jpg';
-      var replacement_name = '/image1xxl.jpg';
-      if (ogImage.slice(-replace_name.length) == replace_name) {
-        ogImage = ogImage.slice(0, -replace_name.length) + replacement_name;
-      }
+      var _ogImage = this.replaceInString('/image1xl.jpg', '/image1xxl.jpg', ogImage);
+      imageUrls.push(_ogImage);
     }
 
     imageUrls.push(ogImage);
@@ -218,7 +222,14 @@ Scraper.prototype.getImageUrls = function(dom) {
       continue;
     }
 
-    imageUrls.push(u.resolve(this.url, imageUrl));
+    imageUrl = u.resolve(this.url, imageUrl);
+
+    if (u.parse(this.url).host == 'www.jcrew.com') {
+      var _imageUrl = this.replaceInString('$pdp_fs418$', 'scl=1', imageUrl);
+      imageUrls.push(_imageUrl);
+    }
+
+    imageUrls.push(imageUrl);
   }
 
   var hrefElements = dom.find('//*[@href]');
