@@ -191,13 +191,14 @@ Scraper.prototype.replaceInString = function(replace_name, replacement_name, str
 Scraper.prototype.getImageUrls = function(dom) {
   var imageUrls = [];
   var imageUrl = '';
+  var host = u.parse(this.url).host;
 
   var ogImageElement = dom.get('//meta[@property="og:image"]');
 
   if (typeof ogImageElement !== "undefined") {
     var ogImage = ogImageElement.attr('content').value();
 
-    if (u.parse(this.url).host == 'us.asos.com') {
+    if (host == 'us.asos.com') {
       var _ogImage = this.replaceInString('/image1xl.jpg', '/image1xxl.jpg', ogImage);
       imageUrls.push(_ogImage);
     }
@@ -224,8 +225,16 @@ Scraper.prototype.getImageUrls = function(dom) {
 
     imageUrl = u.resolve(this.url, imageUrl);
 
-    if (u.parse(this.url).host == 'www.jcrew.com') {
-      var _imageUrl = this.replaceInString('$pdp_fs418$', 'scl=1', imageUrl);
+    var _imageUrl = '';
+    if (host == 'www.jcrew.com') {
+      _imageUrl = this.replaceInString('$pdp_fs418$', 'scl=1', imageUrl);
+    } else if (host == 'www.jbrandjeans.com') {
+      _imageUrl = this.replaceInString('heritage_l.jpg', 'heritage_l_z.jpg', imageUrl);
+    } else if (host == 'shop.nordstrom.com') {
+      _imageUrl = imageUrl.replace('/ImageGallery/store/product/Large/', '/imagegallery/store/product/zoom/');
+    }
+
+    if (_imageUrl !== '') {
       imageUrls.push(_imageUrl);
     }
 
