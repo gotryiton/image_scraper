@@ -49,7 +49,25 @@ exports['mailto'] = function(test) {
   var sc = new sm.scraper('http://www.gotryiton.com/');
   var mailtoUrl = 'mailto:your%20friends%20email?subject=Cliketis%20wide-leg%20twill%20pants&body=http://www.theoutnet.com/product/171188;jsessionid_am=1B7B6CE549130FFBB90DCE00807268D6.out-am-gs2-13';
   sc.getImageSize(mailtoUrl, function(imageUrl, size) {
-    test.equal(size, -1);
+    test.equal(size, -2);
+    test.done();
+  });
+};
+
+exports['http'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  var mailtoUrl = 'http://weradf.com/';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
+    test.notEqual(size, -2);
+    test.done();
+  });
+};
+
+exports['https'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  var mailtoUrl = 'http://weradf.com/';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
+    test.notEqual(size, -2);
     test.done();
   });
 };
