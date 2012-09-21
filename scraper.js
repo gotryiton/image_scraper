@@ -261,8 +261,9 @@ Scraper.prototype.getImageUrls = function(dom) {
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
   options.url = this.hackUrl(imageUrl, 'image');
-  var host = u.parse(options.url).host;
-  if (typeof host === 'undefined') {
+  var parsedUrl = u.parse(options.url);
+  var host = parsedUrl.host;
+  if (typeof host === 'undefined' || (parsedUrl.protocol != 'http' && parsedUrl.protol != 'https')) {
     callback(imageUrl, -1);
     return;
   }
