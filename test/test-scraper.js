@@ -19,14 +19,6 @@ exports['description'] = function(test) {
   test.done();
 };
 
-exports['og-image'] = function(test) {
-  var sc = new sm.scraper('http://www.gotryiton.com/');
-  sc.getImage(sc.getDom(ogPage), function(image){
-    test.equal(image, 'http://s7d5.scene7.com/is/image/adidasgroup/G51846_01');
-    test.done();
-  });
-};
-
 exports['price'] = function(test) {
   var sc = new sm.scraper('http://www.gotryiton.com/');
   test.equal(sc.getPrice(metaPage), '1050.00'); // $1,050.00
@@ -49,6 +41,15 @@ exports['no-pin'] = function(test) {
   test.equal(sc.getPrice(noPinPage), null);
   sc.getImage(sc.getDom(noPinPage), function(image){
     test.equal(image, null);
+    test.done();
+  });
+};
+
+exports['mailto'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  sc.getImageSize('mailto:scott@gotryiton.com', function(imageUrl, size){
+    test.equal(imageUrl, 'mailto:scott@gotryiton.com');
+    test.equal(size, -1);
     test.done();
   });
 };
