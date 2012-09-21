@@ -39,7 +39,7 @@ exports['no-pin'] = function(test) {
   test.equal(sc.getTitle(sc.getDom(noPinPage)), 'adidas CLIMACOOL Ride Shoes');
   test.equal(sc.getDescription(sc.getDom(noPinPage)), 'Light, durable and made to keep your feet fresh when you run. These adidas CC Ride running shoes have a lightweight mesh upper, allover CLIMACOOL® ventilation, adiPRENE®+ in the forefoot for more efficient propulsion and adiPRENE® under the heel for cushioning.');
   test.equal(sc.getPrice(noPinPage), null);
-  sc.getImage(sc.getDom(noPinPage), function(image){
+  sc.getImage(sc.getDom(noPinPage), function(image) {
     test.equal(image, null);
     test.done();
   });
@@ -47,8 +47,8 @@ exports['no-pin'] = function(test) {
 
 exports['mailto'] = function(test) {
   var sc = new sm.scraper('http://www.gotryiton.com/');
-  sc.getImageSize('mailto:scott@gotryiton.com', function(imageUrl, size){
-    test.equal(imageUrl, 'mailto:scott@gotryiton.com');
+  var mailtoUrl = 'mailto:your%20friends%20email?subject=Cliketis%20wide-leg%20twill%20pants&body=http://www.theoutnet.com/product/171188;jsessionid_am=1B7B6CE549130FFBB90DCE00807268D6.out-am-gs2-13';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
     test.equal(size, -1);
     test.done();
   });
