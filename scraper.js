@@ -263,8 +263,12 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
   options.url = this.hackUrl(imageUrl, 'image');
   var parsedUrl = u.parse(options.url);
   var host = parsedUrl.host;
-  if (typeof host === 'undefined' || (parsedUrl.protocol != 'http' && parsedUrl.protol != 'https')) {
+  if (typeof host === 'undefined') {
     callback(imageUrl, -1);
+    return;
+  }
+  if (parsedUrl.protocol != 'http:' && parsedUrl.protol != 'https:') {
+    callback(imageUrl, -2);
     return;
   }
   console.log('Attempting to fetch Content-Length for', imageUrl);
