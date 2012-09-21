@@ -53,3 +53,21 @@ exports['mailto'] = function(test) {
     test.done();
   });
 };
+
+exports['http'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  var mailtoUrl = 'http://weradf.com/';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
+    test.notEqual(size, -2);
+    test.done();
+  });
+};
+
+exports['https'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  var mailtoUrl = 'http://weradf.com/';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
+    test.notEqual(size, -2);
+    test.done();
+  });
+};
