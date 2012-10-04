@@ -1,13 +1,14 @@
-process.on('uncaughtException', function (err) {
-  console.log('Caught uncaught exception: ' + err);
-});
-
 var sc = require('./scraper'),
     restify = require('restify');
 
 var server = restify.createServer();
 
 server.post('/scraper', function(req, res) {
+  process.on('uncaughtException', function (err) {
+    console.log('Caught uncaught exception: ' + err);
+    res.send(415, {'status': 'error'});
+  });
+
   var url = req.params.url;
   console.log('Scrape request for', url);
   var scInstance = new sc.scraper(url);
