@@ -19,14 +19,6 @@ exports['description'] = function(test) {
   test.done();
 };
 
-exports['og-image'] = function(test) {
-  var sc = new sm.scraper('http://www.gotryiton.com/');
-  sc.getImage(sc.getDom(ogPage), function(image){
-    test.equal(image, 'http://s7d5.scene7.com/is/image/adidasgroup/G51846_01');
-    test.done();
-  });
-};
-
 exports['price'] = function(test) {
   var sc = new sm.scraper('http://www.gotryiton.com/');
   test.equal(sc.getPrice(metaPage), '1050.00'); // $1,050.00
@@ -47,8 +39,35 @@ exports['no-pin'] = function(test) {
   test.equal(sc.getTitle(sc.getDom(noPinPage)), 'adidas CLIMACOOL Ride Shoes');
   test.equal(sc.getDescription(sc.getDom(noPinPage)), 'Light, durable and made to keep your feet fresh when you run. These adidas CC Ride running shoes have a lightweight mesh upper, allover CLIMACOOL® ventilation, adiPRENE®+ in the forefoot for more efficient propulsion and adiPRENE® under the heel for cushioning.');
   test.equal(sc.getPrice(noPinPage), null);
-  sc.getImage(sc.getDom(noPinPage), function(image){
+  sc.getImage(sc.getDom(noPinPage), function(image) {
     test.equal(image, null);
+    test.done();
+  });
+};
+
+exports['mailto'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  var mailtoUrl = 'mailto:your%20friends%20email?subject=Cliketis%20wide-leg%20twill%20pants&body=http://www.theoutnet.com/product/171188;jsessionid_am=1B7B6CE549130FFBB90DCE00807268D6.out-am-gs2-13';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
+    test.equal(size, -2);
+    test.done();
+  });
+};
+
+exports['http'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  var mailtoUrl = 'http://weradf.com/';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
+    test.notEqual(size, -2);
+    test.done();
+  });
+};
+
+exports['https'] = function(test) {
+  var sc = new sm.scraper('http://www.gotryiton.com/');
+  var mailtoUrl = 'http://weradf.com/';
+  sc.getImageSize(mailtoUrl, function(imageUrl, size) {
+    test.notEqual(size, -2);
     test.done();
   });
 };
