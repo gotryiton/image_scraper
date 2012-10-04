@@ -1,3 +1,7 @@
+process.on('uncaughtException', function (err) {
+  console.log('Caught uncaught exception: ' + err);
+});
+
 var sc = require('./scraper'),
     restify = require('restify');
 
