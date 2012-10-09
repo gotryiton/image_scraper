@@ -4,7 +4,6 @@ var request     = require('request'),
 
 var Scraper = function(url) {
   this.url           = unescape(url);
-  this.noPin         = false;
   this.minImageSize  = 10240/2;
 
   this.imageUrlRules = {
@@ -91,15 +90,118 @@ Scraper.prototype.getPrice = function() {
   return null;
 };
 
+Scraper.prototype.getPotentialImageUrls = function() {
+  // TODO: Expand pool of potential image URLs and consider the OpenGraph image
+  var imgElements = document.images;
+  return Array.prototype.slice.call(imgElements).map(function(element) {
+    return element.getAttribute('src');
+  });
+};
+
+Scraper.prototype.getImage = function(images, callback) {
+  var biggestSize = this.minImageSize;
+  var biggestImage = null;
+  var alternateImages = [];
+
+  var count = images.length;
+
+  if (!count) {
+    callback(biggestImage, alternateImages);
+    return;
+  }
+
+  var scraper = this;
+
+  images.forEach(function(image) {
+    scraper.getImageSize(image, function(url, size) {
+      count--;
+      if (size > scraper.minImageSize) {
+        if (size > biggestSize) {
+          if (biggestImage !== null) {
+            alternateImages.push({url: biggestImage, size: biggestSize});
+          }
+          biggestSize = size;
+          biggestImage = url;
+        } else {
+          alternateImages.push({url: url, size: size});
+        }
+      }
+      if (!count) callback(biggestImage, scraper.convertToSortedUrlsArray(alternateImages));
+    });
+  });
+};
+
+Scraper.prototype.getImageSize = function(imageUrl, callback) {
+  var options = this.getRequestOptions(imageUrl);
+  options.url = this.applyUrlRules(imageUrl, 'image');
+  var parsedUrl = u.parse(options.url);
+  var host = parsedUrl.host;
+
+  if (typeof host === 'undefined') {
+    callback(imageUrl, -1);
+    return;
+  }
+  if (parsedUrl.protocol != 'http:' && parsedUrl.protol != 'https:') {
+    callback(imageUrl, -2);
+    return;
+  }
+
+  console.log('Attempting Content-Length for', imageUrl);
+  request(options, function (error, response, body) {
+    if (error || response.statusCode != 200) {
+      callback(imageUrl, -1);
+      console.log('Error requesting', imageUrl);
+      return;
+    }
+    if (typeof response.headers['content-type'] !== 'undefined' && response.headers['content-type'].substr(0, 5) != 'image') {
+      callback(imageUrl, -1);
+      return;
+    }
+    var range = response.headers['content-length'];
+    var size = parseInt(range, 10);
+    callback(imageUrl, size);
+  });
+};
+
+Scraper.prototype.getRequestOptions = function(url) {
+  // Uses the host of the page URL and not the image URL
+  var host = u.parse(this.url).host;
+
+  var methodRules = {
+    'm.shopbop.com': 'GET',
+    'www.shopbop.com': 'GET'
+  };
+
+  var method = methodRules[host] || 'HEAD';
+
+  // setting up the options
+  var options = {
+    url: url,
+    method: method,
+    timeout: 2000
+  };
+
+  return options;
+};
+
+Scraper.prototype.convertToSortedUrlsArray = function(alternateImages) {
+  alternateImages.sort(function(a, b) {
+    return a.size > b.size ? (a.size == b.size ? 0 : -1) : 1;
+  });
+  var imageUrls = [];
+
+  var count = alternateImages.length;
+  for(var i = 0; i < count; i++) {
+    imageUrls.push(alternateImages[i].url);
+  }
+  return imageUrls;
+};
+
 Scraper.prototype.getData = function(callback) {
   var scraper = this;
-  phantom.create(function(ph) {
+  phantom.create('--load-images=no', function(ph) {
     ph.createPage(function(page) {
-      page.onConsoleMessage = function (msg) {
-          console.log(msg);
-      };
-
-      page.open(scraper.url, function(status) {
+      page.open(scraper.applyUrlRules(scraper.url, 'page'), function(status) {
         if (status == 'fail') {
           callback({
             'status': 'error'
@@ -107,22 +209,45 @@ Scraper.prototype.getData = function(callback) {
           return;
         }
 
+        // TODO: Parallelize this if possible
+        // Get title, description and the OpenGraph image
         page.evaluate(scraper.getMetaData, function(metaData) {
+          // Get price
           page.evaluate(scraper.getPrice, function(price) {
-            callback({
-              status: 'ok',
-              title: metaData.title,
-              description: metaData.description,
-              image: '',
-              alternateImages: [],
-              price: price
+            // Get images
+            page.evaluate(scraper.getPotentialImageUrls, function(potentialImageUrls) {
+              console.log(potentialImageUrls);
+              scraper.getImage(potentialImageUrls, function(image, alternateImages) {
+                // Returning scrapped data
+                callback({
+                  status: 'ok',
+                  title: metaData.title,
+                  description: metaData.description,
+                  image: image,
+                  alternateImages: alternateImages,
+                  price: price
+                });
+                // Exit PhantomJS
+                ph.exit();
+              });
             });
-            ph.exit();
           });
         });
       });
     });
   });
+};
+
+Scraper.prototype.applyUrlRules = function(url, type) {
+  var rules;
+  if (type == 'page') {
+    rules = this.pageUrlRules;
+  } else if (type == 'image') {
+    rules = this.imageUrlRules;
+  }
+  var host = u.parse(this.url).host;
+  rule = rules[host];
+  return rule ? rule(url) : url;
 };
 
 Scraper.prototype.getAsosToUSFromUK = function(url) {
