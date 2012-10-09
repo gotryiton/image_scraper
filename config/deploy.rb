@@ -18,10 +18,6 @@ namespace :scraper do
     run "#{sudo} service #{application} restart"
   end
 
-  task :npm_install do
-    run "npm install"
-  end
-
   task :reload, :roles => :app, :except => { :no_release => true } do
     run "#{sudo} sv 2 #{application}"
   end
