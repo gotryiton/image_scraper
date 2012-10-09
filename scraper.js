@@ -256,4 +256,10 @@ Scraper.prototype.getAsosToUSFromUK = function(url) {
   return url;
 };
 
+Scraper.prototype.urbanTransformers = function(url) {
+  var hackedUrl = url.replace('$cat$', '$zoom$');
+  hackedUrl = hackedUrl.replace('$detailthumb$', '$zoom$');
+  return hackedUrl;
+};
+
 exports.scraper = Scraper;
