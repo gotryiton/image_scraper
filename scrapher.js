@@ -27,6 +27,7 @@ Scraper.prototype.getMetaData = function() {
 
     // Handle OpenGraph elements
     var property = element.getAttribute('property');
+    console.log(property);
     if (property !== null) {
       switch(property) {
         case 'og:title':
@@ -52,44 +53,76 @@ Scraper.prototype.getMetaData = function() {
           break;
       }
     }
-
-    if (ogImage !== null) this.ogImage = ogImage;
-    title = title || document.title;
-    return {
-      title: title,
-      description: description
-    };
   }
+
+  if (ogImage !== null) this.ogImage = ogImage;
+  title = title || document.title;
+
+  return {
+    title: title,
+    description: description
+  };
+};
+
+Scraper.prototype.getPrice = function() {
+  var string = document.body.innerHTML;
+
+  // TODO: Make regulax expression faster and possibly more robust
+  var regex = new RegExp(/(\$\s*[\d,]+\.\d+)|([\d,]+\.\d+\s*USD)/g);
+  var matches = string.match(regex);
+  if (matches === null) {
+    return null;
+  }
+  // return first non-zero price
+  for(var i = 0; i < matches.length; i++) {
+    var price = matches[i];
+
+    // clearn price
+    price = price.replace(' ', '');
+    price = price.replace(',', '');
+    price = price.replace('$', '');
+    price = price.replace('USD', '');
+    price = price.replace('>', '');
+
+    if (price > 0) {
+      return price;
+    }
+  }
+  return null;
 };
 
 Scraper.prototype.getData = function(callback) {
   var scraper = this;
   phantom.create(function(ph) {
     ph.createPage(function(page) {
+      page.onConsoleMessage = function (msg) {
+          console.log(msg);
+      };
+
       page.open(scraper.url, function(status) {
         if (status == 'fail') {
-          callback(scraper.getErrorResponse());
+          callback({
+            'status': 'error'
+          });
           return;
         }
 
-        var metaData = page.evaluate(scraper.getMetaData());
-        callback({
-          status: 'ok',
-          title: metaData.title,
-          description: description,
-          image: image,
-          alternateImages: alternateImages,
-          price: price
+        page.evaluate(scraper.getMetaData, function(metaData) {
+          page.evaluate(scraper.getPrice, function(price) {
+            callback({
+              status: 'ok',
+              title: metaData.title,
+              description: metaData.description,
+              image: '',
+              alternateImages: [],
+              price: price
+            });
+            ph.exit();
+          });
         });
       });
     });
   });
-};
-
-Scraper.prototype.getErrorResponse = function() {
-  return {
-    'status': 'error'
-  };
 };
 
 Scraper.prototype.getAsosToUSFromUK = function(url) {
