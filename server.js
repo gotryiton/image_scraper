@@ -1,4 +1,4 @@
-var sc = require('./scraper'),
+var sc = require('./scrapher'),
     restify = require('restify');
 
 var server = restify.createServer();
