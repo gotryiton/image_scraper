@@ -2,9 +2,9 @@
   "name": "scraper",
   "version": "0.1.9",
   "dependencies": {
-    "libxmljs": "0.5.x",
     "restify": "0.5.x",
-    "request": "2.9.x"
+    "request": "2.9.x",
+    "phantom":"git://github.com/amir20/phantomjs-node.git#phantom-1.7-fix"
  },
  "devDependencies": {
      "nodeunit": "0.6.x"
