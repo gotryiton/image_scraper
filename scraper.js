@@ -180,7 +180,7 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
 };
 
 Scraper.prototype.getRequestOptions = function(url) {
-  // Uses the host of the page URL and not the image URL
+  // Uses the host of the page URL and not that of the image URL
   var host = u.parse(this.url).host;
 
   var methodRules = {
@@ -190,7 +190,7 @@ Scraper.prototype.getRequestOptions = function(url) {
 
   var method = methodRules[host] || 'HEAD';
 
-  // setting up the options
+  // Setting up the options
   var options = {
     url: url,
     method: method,
