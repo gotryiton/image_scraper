@@ -10,7 +10,8 @@ var Scraper = function(url) {
     'images.urbanoutfitters.com': this.urbanTransformers
   };
   this.pageUrlRules  = {
-    'm.asos.com': this.getAsosToUSFromUK
+    'm.asos.com': this.getAsosToUSFromUK,
+    'www.shopbop.com': this.shopBigBop
   };
 };
 
@@ -93,24 +94,40 @@ Scraper.prototype.getPrice = function() {
 Scraper.prototype.getPotentialImageUrls = function() {
   // TODO: Expand pool of potential image URLs and consider the OpenGraph image
   var imgElements = document.images;
-  return Array.prototype.slice.call(imgElements).map(function(element) {
+  var imageUrls = Array.prototype.slice.call(imgElements).map(function(element) {
     return element.getAttribute('src');
   });
+
+  var aElements = document.links;
+  var aUrls = Array.prototype.slice.call(aElements).map(function(element) {
+    return element.getAttribute('href');
+  });
+
+  var scriptElements = document.scripts;
+  var scriptUrls = [];
+  // Gruber's regexp
+  var regexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/i;
+  for (var i = 0; i < scriptElements.length; i++) {
+    element = scriptElements[i];
+    var urls = element.innerHTML.match(regexp);
+    if (urls !== null) scriptUrls = scriptUrls.concat(urls);
+  }
+  scriptUrls = scriptUrls.filter(function(e) { return e ? true: false; });
+
+  return [].concat(imageUrls, aUrls, scriptUrls);
 };
 
 Scraper.prototype.getImage = function(images, callback) {
   var biggestSize = this.minImageSize;
   var biggestImage = null;
   var alternateImages = [];
-
   var count = images.length;
+  var scraper = this;
 
   if (!count) {
     callback(biggestImage, alternateImages);
     return;
   }
-
-  var scraper = this;
 
   images.forEach(function(image) {
     scraper.getImageSize(image, function(url, size) {
@@ -133,7 +150,6 @@ Scraper.prototype.getImage = function(images, callback) {
 
 Scraper.prototype.getImageSize = function(imageUrl, callback) {
   var options = this.getRequestOptions(imageUrl);
-  options.url = this.applyUrlRules(imageUrl, 'image');
   var parsedUrl = u.parse(options.url);
   var host = parsedUrl.host;
 
@@ -201,6 +217,9 @@ Scraper.prototype.getData = function(callback) {
   var scraper = this;
   phantom.create('--load-images=no', function(ph) {
     ph.createPage(function(page) {
+      page.set('onConsoleMessage', function(msg) {
+        // console.log(msg);
+      });
       page.open(scraper.applyUrlRules(scraper.url, 'page'), function(status) {
         if (status == 'fail') {
           callback({
@@ -216,7 +235,6 @@ Scraper.prototype.getData = function(callback) {
           page.evaluate(scraper.getPrice, function(price) {
             // Get images
             page.evaluate(scraper.getPotentialImageUrls, function(potentialImageUrls) {
-              console.log(potentialImageUrls);
               scraper.getImage(potentialImageUrls, function(image, alternateImages) {
                 // Returning scrapped data
                 callback({
@@ -245,6 +263,7 @@ Scraper.prototype.applyUrlRules = function(url, type) {
   } else if (type == 'image') {
     rules = this.imageUrlRules;
   }
+  // Host of requested page
   var host = u.parse(this.url).host;
   rule = rules[host];
   return rule ? rule(url) : url;
@@ -260,6 +279,10 @@ Scraper.prototype.urbanTransformers = function(url) {
   var hackedUrl = url.replace('$cat$', '$zoom$');
   hackedUrl = hackedUrl.replace('$detailthumb$', '$zoom$');
   return hackedUrl;
+};
+
+Scraper.prototype.shopBigBop = function(url) {
+  return url.replace('p1_1-0_254x500.jpg', 'q1_1-0.jpg');
 };
 
 exports.scraper = Scraper;
