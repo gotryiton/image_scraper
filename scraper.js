@@ -66,9 +66,25 @@ Scraper.prototype.getMetaData = function() {
 
 Scraper.prototype.getPrice = function() {
     var string = document.body.innerHTML;
+    var regex = /(\$\s*[\d,]+\.\d+)|([\d,]+\.\d+\s*USD)/g;
 
-    // TODO: Make regulax expression faster and possibly more robust
-    var regex = new RegExp(/(\$\s*[\d,]+\.\d+)|([\d,]+\.\d+\s*USD)/g);
+    // Replace the element (string) or the regex that's used on per domain basis
+    switch(window.location.hostname) {
+        case 'www.gap.com':
+        case 'bananarepublic.gap.com':
+        case 'oldnavy.gap.com':
+        case 'piperlime.gap.com':
+        case 'athleta.gap.com':
+            string = document.getElementById('addToBagContent').innerHTML;
+            break;
+
+        case 'www.jcrew.com':
+            string = document.getElementById('product_details_form0').innerHTML;
+            break;
+
+        default:
+            break;
+    }
     var matches = string.match(regex);
     if (matches === null) {
         return null;
