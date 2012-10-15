@@ -1,15 +1,15 @@
-var request         = require('request'),
-        phantom         = require('phantom'),
-        u                     = require('url');
+var request     = require('request'),
+    phantom     = require('phantom'),
+    u           = require('url');
 
 var Scraper = function(url) {
-    this.url                     = unescape(url);
-    this.minImageSize    = 10240/2;
+    this.url           = unescape(url);
+    this.minImageSize  = 10240/2;
 
     this.imageUrlRules = {
         'images.urbanoutfitters.com': this.urbanTransformers
     };
-    this.pageUrlRules    = {
+    this.pageUrlRules  = {
         'm.asos.com': this.getAsosToUSFromUK,
         'www.shopbop.com': this.shopBigBop
     };
