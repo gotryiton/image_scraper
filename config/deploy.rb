@@ -18,6 +18,10 @@ namespace :scraper do
     run "#{sudo} service #{application} restart"
   end
 
+  task :npm_install do
+    run "cd #{latest_release} && npm install"
+  end
+
   task :reload, :roles => :app, :except => { :no_release => true } do
     run "#{sudo} sv 2 #{application}"
   end
@@ -27,4 +31,5 @@ task :uname do
   run "uname -a"
 end
 
+before "deploy:symlink", "scraper:npm_install"
 after "deploy:symlink", "scraper:reload"
