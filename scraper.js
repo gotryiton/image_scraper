@@ -121,8 +121,8 @@ Scraper.prototype.getPotentialImageUrls = function() {
 
     var scriptElements = document.scripts;
     var scriptUrls = [];
-    // Gruber's regexp
-    var regexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+    // Modified Gruber's regexp
+    var regexp = /\b((?:https?:(?:\/{1,2}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
     for (var i = 0; i < scriptElements.length; i++) {
         element = scriptElements[i];
         var urls = element.innerHTML.match(regexp);
@@ -149,7 +149,6 @@ Scraper.prototype.getImage = function(images, callback) {
 
     images.forEach(function(image) {
         scraper.getImageSize(image, function(url, size) {
-            count--;
             if (size > scraper.minImageSize) {
                 if (size > biggestSize) {
                     if (biggestImage !== null) {
@@ -161,7 +160,9 @@ Scraper.prototype.getImage = function(images, callback) {
                     alternateImages.push({url: url, size: size});
                 }
             }
-            if (!count) callback(biggestImage, scraper.convertToSortedUrlsArray(alternateImages));
+            if (!--count) {
+                callback(biggestImage, scraper.convertToSortedUrlsArray(alternateImages));
+            }
         });
     });
 };
