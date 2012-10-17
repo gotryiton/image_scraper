@@ -111,18 +111,18 @@ Scraper.prototype.getPotentialImageUrls = function() {
     // TODO: Expand pool of potential image URLs and consider the OpenGraph image
     var imgElements = document.images;
     var imageUrls = Array.prototype.slice.call(imgElements).map(function(element) {
-        return element.getAttribute('src');
+        return element.src;
     });
 
     var aElements = document.links;
     var aUrls = Array.prototype.slice.call(aElements).map(function(element) {
-        return element.getAttribute('href');
+        return element.href;
     });
 
     var scriptElements = document.scripts;
     var scriptUrls = [];
     // Gruber's regexp
-    var regexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/i;
+    var regexp = /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
     for (var i = 0; i < scriptElements.length; i++) {
         element = scriptElements[i];
         var urls = element.innerHTML.match(regexp);
