@@ -65,7 +65,7 @@ Scraper.prototype.getMetaData = function() {
 };
 
 Scraper.prototype.getPrice = function() {
-    var string = document.body.innerHTML;
+    var string = document.body.textContent;
     var regex = /(\$\s*[\d,]+\.\d+)|([\d,]+\.\d+\s*USD)/g;
 
     // Replace the element (string) or the regex that's used on per domain basis
@@ -75,16 +75,18 @@ Scraper.prototype.getPrice = function() {
         case 'oldnavy.gap.com':
         case 'piperlime.gap.com':
         case 'athleta.gap.com':
-            string = document.getElementById('addToBagContent').innerHTML;
+            string = document.getElementById('addToBagContent').textContent;
             break;
 
         case 'www.jcrew.com':
-            string = document.getElementById('product_details_form0').innerHTML;
+            var stringElement = document.getElementById('product_details_form') || document.body;
+            string = stringElement.textContent;
             break;
 
         default:
             break;
     }
+
     var matches = string.match(regex);
     if (matches === null) {
         return null;
@@ -119,18 +121,21 @@ Scraper.prototype.getPotentialImageUrls = function() {
         return element.href;
     });
 
+    // Modified version of Gruber's regexp
+    var regexp = /\b((?:https?:(?:\/{1,2}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+
     var scriptElements = document.scripts;
     var scriptUrls = [];
-    // Modified Gruber's regexp
-    var regexp = /\b((?:https?:(?:\/{1,2}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
     for (var i = 0; i < scriptElements.length; i++) {
         element = scriptElements[i];
-        var urls = element.innerHTML.match(regexp);
+        var urls = element.textContent.match(regexp);
         if (urls !== null) scriptUrls = scriptUrls.concat(urls);
     }
     scriptUrls = scriptUrls.filter(function(e) { return e ? true: false; });
 
-    return [].concat(imageUrls, aUrls, scriptUrls);
+    var bodyUrls = document.body.innerHTML.match(regexp).filter(function(e) { return e ? true: false; });
+    
+    return [].concat(imageUrls, aUrls, scriptUrls, bodyUrls);
 };
 
 Scraper.prototype.getImage = function(images, callback) {
