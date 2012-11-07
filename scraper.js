@@ -121,7 +121,7 @@ Scraper.prototype.getPotentialImageUrls = function() {
             var extraLargeImages = extraLargeImageElements.map(function(element) {
                 return element.getAttribute('value');
             });
-            var imageUrls = imageUrls.concat(extraLargeImages);
+            imageUrls = imageUrls.concat(extraLargeImages);
             break;
 
         default:
