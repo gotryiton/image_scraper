@@ -110,11 +110,23 @@ Scraper.prototype.getPrice = function() {
 };
 
 Scraper.prototype.getPotentialImageUrls = function() {
-    // TODO: Expand pool of potential image URLs and consider the OpenGraph image
     var imgElements = document.images;
     var imageUrls = Array.prototype.slice.call(imgElements).map(function(element) {
         return element.src;
     });
+
+    switch(window.location.hostname) {
+        case 'www.zara.com':
+            var extraLargeImageElements = Array.prototype.slice.call(document.getElementsByClassName('pAuxMZoom'));
+            var extraLargeImages = extraLargeImageElements.map(function(element) {
+                return element.getAttribute('value');
+            });
+            var imageUrls = imageUrls.concat(extraLargeImages);
+            break;
+
+        default:
+            break;
+    }
 
     var aElements = document.links;
     var aUrls = Array.prototype.slice.call(aElements).map(function(element) {
@@ -131,11 +143,11 @@ Scraper.prototype.getPotentialImageUrls = function() {
         var urls = element.textContent.match(regexp);
         if (urls !== null) scriptUrls = scriptUrls.concat(urls);
     }
-    scriptUrls = scriptUrls.filter(function(e) { return e ? true: false; });
 
-    var bodyUrls = document.body.innerHTML.match(regexp).filter(function(e) { return e ? true: false; });
-    
-    return [].concat(imageUrls, aUrls, scriptUrls, bodyUrls);
+    var urls = [].concat(imageUrls, aUrls, scriptUrls);
+    urls.push(this.ogImage);
+    urls = urls.filter(function(e) { return e ? true : false; });
+    return urls;
 };
 
 Scraper.prototype.getImage = function(images, callback) {
