@@ -123,6 +123,10 @@ Scraper.prototype.getPotentialImageUrls = function() {
             });
             imageUrls = imageUrls.concat(extraLargeImages);
             break;
+        case 'www.neimanmarcus.com':
+            var largeImage = document.getElementsByClassName('img-wrap')[0].getElementsByTagName('img')[0].dataset.zoomUrl;
+            imageUrls.push(largeImage);
+            break;
 
         default:
             break;
