@@ -60,7 +60,8 @@ Scraper.prototype.getMetaData = function() {
 
     return {
         title: title,
-        description: description
+        description: description,
+        finalDestination: window.location.href
     };
 };
 
@@ -296,7 +297,8 @@ Scraper.prototype.getData = function(callback) {
                                     description: metaData.description,
                                     image: image,
                                     alternateImages: alternateImages,
-                                    price: price
+                                    price: price,
+                                    finalDestination: metaData.finalDestination
                                 });
                                 // Exit PhantomJS
                                 ph.exit();
