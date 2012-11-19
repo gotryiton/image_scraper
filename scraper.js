@@ -202,6 +202,15 @@ Scraper.prototype.getImageSize = function(imageUrl, callback) {
         return;
     }
 
+    if (host == 'images.asos-media.com') {
+        if (imageUrl.match(/[a-z]+\/image1xxl\.jpg$/)) {
+            callback(imageUrl, 2*this.minImageSize);
+        } else {
+            callback(imageUrl, -1);
+        }
+        return;
+    }
+
     console.log('Attempting Content-Length for', imageUrl);
     request(options, function (error, response, body) {
         if (error || response.statusCode != 200) {
