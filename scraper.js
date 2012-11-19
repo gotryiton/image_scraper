@@ -223,24 +223,9 @@ Scraper.prototype.getRequestOptions = function(url) {
     // Uses the host of the page URL and not that of the image URL
     var host = u.parse(this.url).host;
 
-    var requestAgentRules = {
-        'www.topshop.com': safari,
-        'www.saksfifthavenue.com': safari,
-        'us.asos.com': safari,
-        'www.jcrew.com': safari,
-        'www.shopbop.com': safari
-    };
-
     var methodRules = {
         'm.shopbop.com': 'GET',
         'www.shopbop.com': 'GET'
-    };
-
-    var mobileSafari = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
-    var safari = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.52.7 (KHTML, like Gecko) Version/5.1.2 Safari/534.52.7';
-
-    var headers = {
-        'User-Agent': requestAgentRules[host] || mobileSafari
     };
 
     var method = methodRules[host] || 'HEAD';
@@ -248,7 +233,6 @@ Scraper.prototype.getRequestOptions = function(url) {
     // Setting up the options
     var options = {
         url: url,
-        headers: headers,
         method: method,
         timeout: 2000
     };
