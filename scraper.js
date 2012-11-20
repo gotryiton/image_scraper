@@ -304,6 +304,7 @@ Scraper.prototype.getData = function(callback) {
                                     image: image,
                                     alternateImages: alternateImages,
                                     price: price,
+                                    siteName: metaData.siteName,
                                     finalDestination: metaData.finalDestination
                                 });
                                 // Exit PhantomJS
