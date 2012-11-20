@@ -7,11 +7,11 @@ var Scraper = function(url) {
     this.minImageSize  = 10240/2;
 
     this.imageUrlRules = {
+        'www.shopbop.com': this.shopBigBop,
         'images.urbanoutfitters.com': this.urbanTransformers
     };
     this.pageUrlRules  = {
-        'm.asos.com': this.getAsosToUSFromUK,
-        'www.shopbop.com': this.shopBigBop
+        'm.asos.com': this.getAsosToUSFromUK
     };
 };
 
@@ -19,6 +19,7 @@ Scraper.prototype.getMetaData = function() {
     var title = null;
     var description = null;
     var ogImage = null;
+    var siteName = null;
 
     var metaElements = document.getElementsByTagName('meta');
     for (var i = 0; i < metaElements.length; i++) {
@@ -38,6 +39,10 @@ Scraper.prototype.getMetaData = function() {
                     break;
                 case 'og:image':
                     ogImage = element.getAttribute('content');
+                    break;
+                case 'og:site_name':
+                    siteName = element.getAttribute('content');
+                    break;
             }
         }
 
@@ -60,7 +65,9 @@ Scraper.prototype.getMetaData = function() {
 
     return {
         title: title,
-        description: description
+        description: description,
+        siteName: siteName,
+        finalDestination: document.URL
     };
 };
 
@@ -296,7 +303,9 @@ Scraper.prototype.getData = function(callback) {
                                     description: metaData.description,
                                     image: image,
                                     alternateImages: alternateImages,
-                                    price: price
+                                    price: price,
+                                    siteName: metaData.siteName,
+                                    finalDestination: metaData.finalDestination
                                 });
                                 // Exit PhantomJS
                                 ph.exit();
