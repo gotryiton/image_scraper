@@ -3,8 +3,26 @@ Scraper
 Image: Picks the biggest image in size on the page
 Title: OG title else title in meta tags else HTML title
 Description: OG description else meta description
+=======
+**Image:** Picks the biggest image in size on the page
+**Title:** OG title else title in meta tags else HTML title
+**Description:** OG description else meta description
+**Price:** Picks non-zero price that matches regular expression
+**Site Name:** OG *site_name*
 
-***Note:** Image selection takes consideration of OG image.*
+* **Note:** Image selection takes consideration of OG image.*
+
+Extensions
+----------
+ - Custom user agent can be defined for PhantomJS (see their API documentation).
+ - Custom `element` to look for price can be specified based on domain.
+ - Custom URL transformations (eg. from mobile to desktop) can be specified.
+
+In general custom rules in all aspects can be specified very easily.
+
+Limitations
+-----------
+PhantomJS doesn't handle refresh headers in this current version.
 
 Pre-Requisites
 --------------
@@ -18,6 +36,8 @@ After cloning the repo you will want to run
     npm install
 
 Also make sure you have installed `phantom.js`.
+
+    brew install phantomjs
 
 Testing
 -------
@@ -34,12 +54,14 @@ Sample response would look like
     {
         'status': 'ok',
         'title': 'Black skirt - GAP',
-        'description': null,
+        'description': 'Just another skirt.',
+		'price': 10
         'image': 'http://path/to/biggest/image',
         'alternateImages': [
             'http://foo/bar',
             'http://for/bar/baz'
         ],
+		'siteName': null,
         ‘finalDestination’: ‘http://final/redirect/url’
     }
 
