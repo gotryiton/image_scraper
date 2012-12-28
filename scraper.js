@@ -285,6 +285,8 @@ Scraper.prototype.getData = function(callback) {
                     callback({
                         'status': 'error'
                     });
+                    // Exit PhantomJS
+                    ph.exit();
                     return;
                 }
 
