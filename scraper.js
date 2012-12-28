@@ -285,32 +285,50 @@ Scraper.prototype.getData = function(callback) {
                     callback({
                         'status': 'error'
                     });
+                    // Exit PhantomJS
+                    ph.exit();
                     return;
                 }
 
-                // TODO: Parallelize this if possible
+                var semaphore = 3;
+                var callbackMetaData;
+                var callbackPrice;
+                var callbackImage;
+                var callbackAlternateImages;
+
+                var sendCallback = function() {
+                    if (!--semaphore) {
+                        callback({
+                            status: 'ok',
+                            title: callbackMetaData.title,
+                            description: callbackMetaData.description,
+                            image: callbackImage,
+                            alternateImages: callbackAlternateImages,
+                            price: callbackPrice,
+                            siteName: callbackMetaData.siteName,
+                            finalDestination: callbackMetaData.finalDestination
+                        });
+                        // Exit PhantomJS
+                        ph.exit();
+                    }
+                }
+
                 // Get title, description and the OpenGraph image
                 page.evaluate(scraper.getMetaData, function(metaData) {
-                    // Get price
-                    page.evaluate(scraper.getPrice, function(price) {
-                        // Get images
-                        page.evaluate(scraper.getPotentialImageUrls, function(potentialImageUrls) {
-                            scraper.getImage(potentialImageUrls, function(image, alternateImages) {
-                                // Returning scrapped data
-                                callback({
-                                    status: 'ok',
-                                    title: metaData.title,
-                                    description: metaData.description,
-                                    image: image,
-                                    alternateImages: alternateImages,
-                                    price: price,
-                                    siteName: metaData.siteName,
-                                    finalDestination: metaData.finalDestination
-                                });
-                                // Exit PhantomJS
-                                ph.exit();
-                            });
-                        });
+                    callbackMetaData = metaData;
+                    sendCallback();
+                });
+                // Get price
+                page.evaluate(scraper.getPrice, function(price) {
+                    callbackPrice = price;
+                    sendCallback();
+                });
+                // Get images
+                page.evaluate(scraper.getPotentialImageUrls, function(potentialImageUrls) {
+                    scraper.getImage(potentialImageUrls, function(image, alternateImages) {
+                        callbackImage = image;
+                        callbackAlternateImages = alternateImages;
+                        sendCallback();
                     });
                 });
             });
