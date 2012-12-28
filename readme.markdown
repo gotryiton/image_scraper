@@ -11,7 +11,7 @@ Scraper
 
 Extensions
 ----------
-- Custom user agent can be defined for PhantomJS (see their [API documentation](https://github.com/ariya/phantomjs/wiki/API-Reference)).
+- Custom user agent can be defined for PhantomJS (see their [API documentation](https://github.com/ariya/phantomjs/wiki/API-Reference) and use it in conjucation with the [NodeJS library for PhatomJS](https://github.com/sgentle/phantomjs-node).).
 - Custom `element` to look for price can be specified based on domain. (See function `getPrice`.)
 - Custom URL transformations (eg. from mobile to desktop) can be specified. (See functions `applyUrlRules`, `getAsosToUSFromUK`, `urbanTransformers`, `shopBigBop`.)
 
