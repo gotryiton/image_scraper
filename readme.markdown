@@ -56,11 +56,9 @@ Alternatively, you can set the `NODE_ENV` variable in you bash or zsh rc so that
 
 Testing
 -------
-For testing you would need to install `nodeunit` which is a part of `devDependencies`. To access `nodeunit` from the shell you can download from [source](https://github.com/caolan/nodeunit) and `make && sudo make install`.
+For testing you would need to install `nodeunit` which is a part of `devDependencies`.
 
-To run tests simply point `nodeunit` to the test file.
-
-    nodeunit ./test/test-scraper.js
+To run tests, simply run `npm test` from the root directory.
 
 Response
 --------
