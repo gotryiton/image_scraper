@@ -7,6 +7,10 @@
     "phantom":"git://github.com/amir20/phantomjs-node.git#phantom-1.7-fix"
  },
  "devDependencies": {
-     "nodeunit": "0.6.x"
+     "nodeunit": "0.6.x",
+     "express": "3.0.x"
+  },
+  "scripts": {
+     "test": "./node_modules/nodeunit/bin/nodeunit test/test-scraper.js"
   }
 }

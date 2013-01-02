@@ -31,5 +31,5 @@ task :uname do
   run "uname -a"
 end
 
-before "deploy:symlink", "scraper:npm_install"
-after "deploy:symlink", "scraper:reload"
+before "deploy:create_symlink", "scraper:npm_install"
+after "deploy:create_symlink", "scraper:reload"
